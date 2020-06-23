@@ -1,2 +1,2 @@
-# docbook-adapter
-An interface to the DocBook format
+# docbook-tools
+A set of tools to manipulate DocBooks
