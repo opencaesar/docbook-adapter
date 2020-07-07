@@ -1,0 +1,18 @@
+apply plugin: 'application'
+apply plugin: 'java'
+
+ext.title = 'DocBook Adapter'
+description = 'A tool to replace DocBook tags dynamically'
+mainClassName = 'io.opencaesar.docbook.adapter.App'
+applicationName = 'docbook-adapter'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+dependencies {
+    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+	//implementation "edu.stanford.protege:org.protege.xmlcatalog:${versions.xmlcatalog}"
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}

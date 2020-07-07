@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+}
+
+subprojects {
+    group = 'io.opencaesar.owl'
+    version = '0.2.0'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+}
