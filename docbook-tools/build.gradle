@@ -4,18 +4,50 @@ buildscript {
         mavenCentral()
         jcenter()
     }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
+    }
 }
 
 subprojects {
-    group = 'io.opencaesar.owl'
+    group = 'io.opencaesar.docbook'
     version = '0.2.0'
+    
+    ext.versions = [
+        xtext: '2.16.0',
+        owl: '5.1.+',
+        xmlcatalog: '1.0.4'
+    ]
 
     repositories {
+        mavenLocal()
+        maven { url 'https://www.ebi.ac.uk/intact/maven/nexus/content/repositories/public/' }
+        maven { url 'http://code.berkeleybop.org/maven/repository/' }
         mavenCentral()
         jcenter()
     }
     
+    apply plugin: 'com.jfrog.bintray'
     apply plugin: 'java'
     apply plugin: 'eclipse'
     apply plugin: 'idea'
+    
+    apply from: "${rootDir}/gradle/source-layout.gradle"
+    //apply from: "${rootDir}/gradle/maven-deployment.gradle"
+        
+    configurations.all {
+        exclude group: 'asm'
+    }
+
+    task createVersion {
+        doLast {
+            def version = project.version.toString()
+            def file = new File("$projectDir/src/main/resources/version.txt")
+            file.write(version)
+        }
+    }
+    
+    classes {
+        dependsOn createVersion
+    }
 }
