@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>docbook-adapter</name>
-	<comment>Project docbook-adapter created by Buildship.</comment>
+	<comment>A tool to replace DocBook tags dynamically</comment>
 	<projects>
 	</projects>
 	<buildSpec>

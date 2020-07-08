@@ -1,5 +1,6 @@
 apply plugin: 'application'
 apply plugin: 'java'
+apply plugin: 'eclipse'
 
 ext.title = 'DocBook Adapter'
 description = 'A tool to replace DocBook tags dynamically'
@@ -19,6 +20,7 @@ dependencies {
 	implementation "com.github.galigator.openllet:openllet-owlapi:2.6.5"
 	implementation "com.github.galigator.openllet:openllet-explanation:2.6.5"
 	implementation "com.github.galigator.openllet:openllet-jena:2.6.5"
+	implementation "net.sf.saxon:Saxon-HE:9.9.+"
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }
