@@ -1,12 +1,13 @@
 package io.opencaesar.docbook.adapter;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-
+import java.io.OutputStream;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -20,16 +21,19 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.io.CharStreams;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.w3c.dom.Document;
-import net.sf.saxon.BasicTransformerFactory;
+import net.sf.saxon.TransformerFactoryImpl;
+
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FOPException;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.MimeConstants;
 
 public class App {
 	@Parameter(
@@ -65,6 +69,10 @@ public class App {
 		help = true,
 		order =10)
 	private boolean help;
+	
+	private static String tag_path =  "xslt/tag/all_transformations.xsl";
+	private static String html_path =  "xslt/docbook_xsl/html/docbook.xsl";
+	private static String pdf_path = "xslt/docbook_xsl/fo/docbook.xsl";
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);
@@ -102,34 +110,6 @@ public class App {
 		DBTransform trans = getTransformer(inputPath, resultPath, type); 
 		trans.apply();
 		
-		
-		
-		
-		
-		//Variable holding the path to the master style sheet 
-		//final String stylePath = getStylePath(type);
-		//File input = getFile(inputPath);
-		
-		//Based on type, determine the necessary style sheet and operations
-
-		//DBTransform trans = getTransformer(inputPath, resultPath, type);
-		
-		/*
-		//Open input file and the master xslt for tag replacement
-		StreamSource docbook = new StreamSource(input);
-		Transformer transformer = new net.sf.saxon.TransformerFactoryImpl()
-				.newTransformer(new StreamSource (getFile(stylePath)));
-		Transformer transformer = TransformerFactory.newInstance()
-				.newTransformer(new StreamSource (getFile(stylePath)));*/
-		/*
-		//Create output file
-		File res = new File(resultPath + "/" + input.getName());
-		StreamResult output = new StreamResult(res);
-		
-		//Apply transformation
-		transformer.transform(docbook, output);
-		*/
-		
 	    LOGGER.info("=================================================================");
 		LOGGER.info("                          E N D");
 		LOGGER.info("=================================================================");
@@ -153,10 +133,21 @@ public class App {
 		return version;
 	}
 	
+	/**
+	 * 
+	 * Interface for Strategy design pattern
+	 *
+	 */
 	public interface DBTransform{
 		void apply(); 
 	}
 	
+	/**
+	 * Abstract superclass for Strategy design pattern
+	 * @param inputPath: File path of the xml file to apply the style sheet to
+	 * @param stylePath: File path of the xsl file that will be applied to the input
+	 * @param resultPath: File path of the resulting file 
+	 */
 	abstract class DBTransformer implements DBTransform{
 		private File input; 
 		private File style; 
@@ -165,7 +156,18 @@ public class App {
 		public DBTransformer(String inputPath, String stylePath, String resultPath) {
 			input = getFile(inputPath); 
 			style = getFile(stylePath); 
-			result = getFile(resultPath); 
+			//Create the resulting file and overwrite if it previously exists
+			result = new File(resultPath);
+			if (result.exists())
+			{
+				result.delete(); 
+			}
+			try {
+				result.createNewFile();
+			} catch (IOException e) {
+				LOGGER.error("Cannot create resulting file: ");
+				e.printStackTrace();
+			}
 		}
 		
 		//Getter functions
@@ -184,6 +186,10 @@ public class App {
 		public abstract void apply(); 		
 	}
 	
+	/**
+	 * Class that implements DBTransform.
+	 * Used for HTML and tag replacement
+	 */
 	public class SimpleDBTransform extends DBTransformer {
 		
 		public SimpleDBTransform (String inputPath, String stylePath, String resultPath) {
@@ -197,6 +203,12 @@ public class App {
 		}
 	}
 	
+	/**
+	 * Class that implements DBTransform
+	 * Used for PDF transformation, as it has an intermediate transformation step
+	 * XML -> XML-FO -> PDF
+	 * Uses Apache FO to convert XML-FO to PDF
+	 */
 	public class PDFTransform extends DBTransformer {
 		public PDFTransform(String inputPath, String stylePath, String resultPath) {
 			super(inputPath, stylePath, resultPath); 
@@ -207,10 +219,11 @@ public class App {
 			//Create an intermediate file for the XML-FO transformation 
 			try {
 				File temp = File.createTempFile("intermediate", ".xml", getResult().getParentFile());
+				temp.deleteOnExit();
+				//Apply XML -> XML-FO transformation
 				applyTransformation(getInput(), getStyle(), temp);
-				
-				//Now apply FO to PDF transformation
-				
+				//Apply XML-FO -> PDF transformation
+				applyFOP(temp, getResult());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				LOGGER.error("File creation exception: ");
@@ -222,13 +235,13 @@ public class App {
 	}
 	
 	/**
-	 * Applies an XSLT on a given xml file
+	 * Applies an XSLT on a given xml file using the Saxon HE XSL processor
 	 * @param input: File path of the input xml to apply the XSLT to
 	 * @param sheet: File path of the XSL that will be applied
 	 */
 	private void applyTransformation(File input, File style, File res) {
 		try {
-			Transformer transformer = new net.sf.saxon.TransformerFactoryImpl()
+			Transformer transformer = new TransformerFactoryImpl()
 					.newTransformer(new StreamSource(style));
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
@@ -240,8 +253,22 @@ public class App {
 		
 	}
 	
-	private void applyFOP(File input) {
-		
+	private void applyFOP(File input, File result) {
+		FopFactory fopFact = FopFactory.newInstance();
+		try {
+			OutputStream out = new BufferedOutputStream(new FileOutputStream(result));
+			Fop fop = fopFact.newFop(MimeConstants.MIME_PDF, out); 
+			Transformer transformer = new TransformerFactoryImpl()
+					.newTransformer();
+			Source src = new StreamSource(input);
+		    // Resulting SAX events (the generated FO) must be piped through to FOP
+		    Result res = new SAXResult(fop.getDefaultHandler());
+		    transformer.transform(src,  res);
+		    out.close();
+		} catch (FOPException | TransformerException | IOException e) {
+			LOGGER.error("Error: couldn't apply FOP transformation: "); 
+			e.printStackTrace();
+		}
 	}
 	
 	//Given a file path, return the file 
@@ -260,11 +287,11 @@ public class App {
 		String result = resultPath + resultName;
 		switch (type.toLowerCase()) {
 			case "tag":
-				return new SimpleDBTransform(inputPath, "xslt/tag/all_transformations.xsl", result + ".xml");
+				return new SimpleDBTransform(inputPath, tag_path, result + ".xml");
 			case "pdf":
-				//return new SimpleDBTransform(inputPath, "xslt/docbook/")
+				return new PDFTransform(inputPath, pdf_path, result + ".pdf");
 			case "html":
-				//return "Hold"; 
+				return new SimpleDBTransform(inputPath, html_path, result + ".html");
 			default: 
 				LOGGER.error(type + " is not a supported type. Please choose tag, pdf, or html");
 				System.exit(1);
