@@ -2,7 +2,6 @@ package io.opencaesar.docbook.adapter;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +28,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import net.sf.saxon.TransformerFactoryImpl;
+//import net.sf.docbook; 
 
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FOPException;
