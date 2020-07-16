@@ -1,20 +1,18 @@
-# DocBook Adapter
+# DocBook Tools
 
-A CLI that replaces tags inside a DocBook with data from SPARQL frames 
+A set of tools to support DocBooks
 
-# Run as CLI
-MacOS/Linux:
+## Clone
+```
+    git clone https://github.com/opencaesar/docbook-tools.git
+    cd docbook-tools    
+```
+## Build
+Requirements: java 8
 ```
     cd docbook-tools
-    ./gradlew docbook-adapater:run --args="..."    
+    ./gradlew build
 ```
-Windows:
-```
-    cd docbook-tools
-    gradlew.bat docbook-adapater:run --args="..."    
-```
-Args:
-```
-    --input, -i path/to/docbook.xml
-    --result, -r path/to/result_folder
-```
+
+## [DocBook Adapter](docbook-tools/docbook-tools/README.md)
+A tool to execute tag transformations and renders on a given DocBook.

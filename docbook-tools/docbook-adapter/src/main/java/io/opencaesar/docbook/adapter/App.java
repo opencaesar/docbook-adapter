@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -18,6 +21,8 @@ import org.apache.log4j.PatternLayout;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.IParameterValidator;
 import com.google.common.io.CharStreams;
 
 import javax.xml.transform.Result;
@@ -28,7 +33,6 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import net.sf.saxon.TransformerFactoryImpl;
-//import net.sf.docbook; 
 
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FOPException;
@@ -51,11 +55,19 @@ public class App {
 	String resultPath;
 	
 	@Parameter(
-			names = { "--type", "-t" },
-			description = "Path to the folder to save the result to (Required)",
-			required = false,
-			order = 3)
-		String type = "tag";
+		names = { "--type", "-t" },
+		description = "Type of operation. Options are tag, pdf, or html (Required)",
+		validateWith = TypeValidator.class,
+		required = true,
+		order = 4)
+	String type;
+	
+	@Parameter(
+		names = { "--frames", "-f" },
+		description = "Path to the folder to save the result to (Required for tag replacement, otherwise optional)",
+		required = false,
+		order = 5)
+	String framePath = null;
 
 	@Parameter(
 		names = { "-d", "--debug" },
@@ -70,9 +82,9 @@ public class App {
 		order =10)
 	private boolean help;
 	
-	private static String tag_path =  "xslt/tag/all_transformations.xsl";
-	private static String html_path =  "xslt/docbook_xsl/html/docbook.xsl";
-	private static String pdf_path = "xslt/docbook_xsl/fo/docbook.xsl";
+	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/all_transformations.xsl").getFile();
+	private static String html_path =  Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/html/docbook.xsl").getFile();
+	private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/fo/docbook.xsl").getFile();
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);
@@ -129,8 +141,20 @@ public class App {
 		} catch (IOException e) {
 			String errorMsg = "Could not read version.txt file." + e;
 			LOGGER.error(errorMsg, e);
+			System.exit(1);
 		}
 		return version;
+	}
+	
+	//Validate type parameter
+	public static class TypeValidator implements IParameterValidator {
+		@Override
+		public void validate(final String name, final String value) throws ParameterException {
+			final List<String> validTypes = Arrays.asList("pdf", "html", "tag");
+			if (!validTypes.contains(value.toLowerCase())) {
+				throw new ParameterException("Paramter " + name + " must be either pdf, html, or tag");
+			}
+		}
 	}
 	
 	/**
@@ -165,8 +189,9 @@ public class App {
 			try {
 				result.createNewFile();
 			} catch (IOException e) {
-				LOGGER.error("Cannot create resulting file: ");
+				LOGGER.error("Cannot create resulting file. Printing stack trace: \n ");
 				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 		
@@ -188,11 +213,11 @@ public class App {
 	
 	/**
 	 * Class that implements DBTransform.
-	 * Used for HTML and tag replacement
+	 * Used for HTML
 	 */
-	public class SimpleDBTransform extends DBTransformer {
+	public class SimpleTransform extends DBTransformer {
 		
-		public SimpleDBTransform (String inputPath, String stylePath, String resultPath) {
+		public SimpleTransform (String inputPath, String stylePath, String resultPath) {
 			super(inputPath, stylePath, resultPath);
 		}
 
@@ -206,7 +231,7 @@ public class App {
 	/**
 	 * Class that implements DBTransform
 	 * Used for PDF transformation, as it has an intermediate transformation step
-	 * XML -> XML-FO -> PDF
+	 * XML to XML-FO to PDF
 	 * Uses Apache FO to convert XML-FO to PDF
 	 */
 	public class PDFTransform extends DBTransformer {
@@ -225,14 +250,35 @@ public class App {
 				//Apply XML-FO -> PDF transformation
 				applyFOP(temp, getResult());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				LOGGER.error("File creation exception: ");
+				LOGGER.error("File creation exception. Printing stack trace: \n ");
 				e.printStackTrace();
 				System.exit(1);
 			}
 			
 		}
 	}
+	
+	/**
+	 * Class that implements DBTransform
+	 * Used for tag replacement. Requires the file path of the frames that will be used.
+	 */
+	public class TagTransform extends DBTransformer {
+		public TagTransform (String inputPath, String stylePath, String resultPath) {
+			super(inputPath, stylePath, resultPath);
+			if (framePath == null) {
+				exitPrint("For tag transformation the -f  paramater is required");
+			}
+		}
+
+		@Override
+		public void apply() {
+			File frameFolder = getFile(framePath); 
+			String absPath = frameFolder.toURI().toString();
+			System.out.println(absPath);
+			applyWithParam(getInput(), getStyle(), getResult(), "filePath", absPath); 
+		}
+	}
+	
 	
 	/**
 	 * Applies an XSLT on a given xml file using the Saxon HE XSL processor
@@ -243,16 +289,30 @@ public class App {
 		try {
 			Transformer transformer = new TransformerFactoryImpl()
 					.newTransformer(new StreamSource(style));
+			transformer.setParameter("filePath", " development/frames/");
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			LOGGER.error("Cannot apply transformation. Printing stack trace");
+			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	private void applyWithParam(File input, File style, File res, String paramName, String value) {
+		try {
+			Transformer transformer = new TransformerFactoryImpl()
+					.newTransformer(new StreamSource(style));
+			transformer.setParameter(paramName, value);
+			transformer.transform(new StreamSource(input), new StreamResult(res));
+		} catch (TransformerException e) {
+			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
 			e.printStackTrace();
 			System.exit(1);
 		}
 		
 	}
 	
+	//Applies the FOP transformation that transform a XML-FO into PDF
 	private void applyFOP(File input, File result) {
 		FopFactory fopFact = FopFactory.newInstance();
 		try {
@@ -266,8 +326,9 @@ public class App {
 		    transformer.transform(src,  res);
 		    out.close();
 		} catch (FOPException | TransformerException | IOException e) {
-			LOGGER.error("Error: couldn't apply FOP transformation: "); 
+			LOGGER.error("Error: couldn't apply FOP transformation. Printing stack trace: \n"); 
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 	
@@ -275,9 +336,16 @@ public class App {
 	private File getFile(String path) {
 		File file = new File (path); 
 		if (!file.exists()) {
-			LOGGER.error("File does not exist at: " + path);
+			exitPrint("File does not exist at: " + path);
+			return null;
 		}
 		return file;
+	}
+	
+	//Print msg to log error and exit
+	private void exitPrint(String msg) {
+		LOGGER.error(msg);
+		System.exit(1);
 	}
 	
 	//Get style sheet depending on task
@@ -287,17 +355,17 @@ public class App {
 		String result = resultPath + resultName;
 		switch (type.toLowerCase()) {
 			case "tag":
-				return new SimpleDBTransform(inputPath, tag_path, result + ".xml");
+				return new TagTransform(inputPath, tag_path, result + ".xml");
 			case "pdf":
 				return new PDFTransform(inputPath, pdf_path, result + ".pdf");
 			case "html":
-				return new SimpleDBTransform(inputPath, html_path, result + ".html");
+				return new SimpleTransform(inputPath, html_path, result + ".html");
 			default: 
-				LOGGER.error(type + " is not a supported type. Please choose tag, pdf, or html");
-				System.exit(1);
+				exitPrint(type + " is not a supported type. Please choose tag, pdf, or html");
 				return null;
 		}
 	}
+	
 	
 }
 
