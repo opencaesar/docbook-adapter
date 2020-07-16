@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -274,7 +273,6 @@ public class App {
 		public void apply() {
 			File frameFolder = getFile(framePath); 
 			String absPath = frameFolder.toURI().toString();
-			System.out.println(absPath);
 			applyWithParam(getInput(), getStyle(), getResult(), "filePath", absPath); 
 		}
 	}
@@ -351,8 +349,9 @@ public class App {
 	//Get style sheet depending on task
 	private DBTransform getTransformer(String inputPath, String resultPath, String type) {
 		//Use the inputPath's file name as the output's name
-		String resultName = inputPath.substring(inputPath.lastIndexOf("/"), inputPath.lastIndexOf(".")); 
-		String result = resultPath + resultName;
+		File input = getFile(inputPath); 
+		String resultName = input.getName().substring(0, input.getName().lastIndexOf(".")); 
+		String result = resultPath + File.separator + resultName;
 		switch (type.toLowerCase()) {
 			case "tag":
 				return new TagTransform(inputPath, tag_path, result + ".xml");
