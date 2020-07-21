@@ -32,6 +32,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import net.sf.saxon.TransformerFactoryImpl;
+import net.sf.saxon.Configuration; 
 
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FOPException;
@@ -69,6 +70,13 @@ public class App {
 	String framePath = null;
 
 	@Parameter(
+		names = { "--fo", "-z" },
+		description = "Option to save the intermediate FO representation for PDFs when using the PDF option (Optional)",
+		required = false,
+		order = 6)
+	boolean fo = false;
+
+	@Parameter(
 		names = { "-d", "--debug" },
 		description = "Shows debug logging statements",
 		order = 9)
@@ -84,6 +92,7 @@ public class App {
 	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/all_transformations.xsl").getFile();
 	private static String html_path =  Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/html/docbook.xsl").getFile();
 	private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/fo/docbook.xsl").getFile();
+	//private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("tag_transformations/test_layer.xsl").getFile();
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);
@@ -180,7 +189,13 @@ public class App {
 			input = getFile(inputPath); 
 			style = getFile(stylePath); 
 			//Create the resulting file and overwrite if it previously exists
+			//Double check if input and result are the same (error if they are)
 			result = new File(resultPath);
+			if (result.getAbsoluteFile().equals(input.getAbsoluteFile()))
+			{
+				//Input and result are the same, return err msg and exit
+				exitPrint("Error: Result and input are at the same location. Please change one"); 
+			}
 			if (result.exists())
 			{
 				result.delete(); 
@@ -242,10 +257,23 @@ public class App {
 		public void apply() {
 			//Create an intermediate file for the XML-FO transformation 
 			try {
-				File temp = File.createTempFile("intermediate", ".xml", getResult().getParentFile());
-				temp.deleteOnExit();
+				File temp; 
+				//If the fo arg is given, create the FO file and save it
+				if (!fo) {
+					temp = File.createTempFile("intermediate", ".xml", getResult().getParentFile());
+					temp.deleteOnExit();
+				} else {
+					//Write over FO file if it exists
+					String tempLoc = resultPath + File.separator + "fo.xml";
+					temp = new File(tempLoc);
+					if (temp.exists()) {
+						temp.delete();
+						temp.createNewFile();
+					}
+				}
 				//Apply XML -> XML-FO transformation
 				applyTransformation(getInput(), getStyle(), temp);
+				LOGGER.info("Now apply FOP to PDF");
 				//Apply XML-FO -> PDF transformation
 				applyFOP(temp, getResult());
 			} catch (IOException e) {
@@ -282,12 +310,14 @@ public class App {
 	 * Applies an XSLT on a given xml file using the Saxon HE XSL processor
 	 * @param input: File path of the input xml to apply the XSLT to
 	 * @param sheet: File path of the XSL that will be applied
+	 * @param result: File path of the resulting xml file
 	 */
 	private void applyTransformation(File input, File style, File res) {
 		try {
-			Transformer transformer = new TransformerFactoryImpl()
+			Configuration config = new Configuration(); 
+			config.setXIncludeAware(true);
+			Transformer transformer = new TransformerFactoryImpl(config)
 					.newTransformer(new StreamSource(style));
-			transformer.setParameter("filePath", " development/frames/");
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
@@ -296,9 +326,19 @@ public class App {
 		}
 	}
 	
+	/**
+	 * Applies an XSLT on a given xml file using the Saxon HE XSL processor and sets a global param used in the XSLT
+	 * @param input: File path of the input xml to apply the XSLT to
+	 * @param sheet: File path of the XSL that will be applied
+	 * @param result: File path of the resulting xml file
+	 * @param paramName: String name of the var in the XSL
+	 * @param value: Value given to the var in the XSL
+	 */
 	private void applyWithParam(File input, File style, File res, String paramName, String value) {
 		try {
-			Transformer transformer = new TransformerFactoryImpl()
+			Configuration config = new Configuration(); 
+			config.setXIncludeAware(true);
+			Transformer transformer = new TransformerFactoryImpl(config)
 					.newTransformer(new StreamSource(style));
 			transformer.setParameter(paramName, value);
 			transformer.transform(new StreamSource(input), new StreamResult(res));
@@ -321,7 +361,7 @@ public class App {
 			Source src = new StreamSource(input);
 		    // Resulting SAX events (the generated FO) must be piped through to FOP
 		    Result res = new SAXResult(fop.getDefaultHandler());
-		    transformer.transform(src,  res);
+		    transformer.transform(src, res);
 		    out.close();
 		} catch (FOPException | TransformerException | IOException e) {
 			LOGGER.error("Error: couldn't apply FOP transformation. Printing stack trace: \n"); 
