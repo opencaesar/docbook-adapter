@@ -26,18 +26,28 @@ public class TagTransform extends DBTransformer {
 
 	@Override
 	public void apply() {
-		//Create dir that holds the additional files created for pdf and html extensions
-		//Tag_gen: holds the pdf and html xsl 
+		//In the given result folder, create tag_gen dir
+		//tag_gen: holds the pdf and html xsl 
+		//tag_gen/data: holds data that the pdf and html xsl will reference. Will be deleted on exit
 		String resultDir = getResult().getParentFile().getAbsolutePath().toString();
 		LOGGER.info(resultDir);
 		File tagGenDir = new File(resultDir + File.separator + "tag_gen"); 
 		if (!tagGenDir.exists()) {
 			tagGenDir.mkdir();
 		} else {
-			LOGGER.info("Tag gen exists");
+			LOGGER.info("Overwriting files in tag_gen");
 		}
-		File dataLoc = getFile(resultDir + File.separator + "tag_gen" + File.separator + "data");
-		String dataPath = dataLoc.toURI().toString();
+		//Create tag_gen/data. Exit operation if data dir exists (avoid accidently deleting user files)
+		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
+		if (dataDir.exists()) {
+			LOGGER.info("Please remove data from result/tag_gen. Operation exiting.");
+			System.exit(1);
+		}
+		dataDir.mkdir();
+		String tagGenPath = tagGenDir.toString();
+		String dataPath = dataDir.toURI().toString();
+		LOGGER.info(tagGenPath);
+		LOGGER.info(dataPath);
 		
 		//Tag replacement: Set necessary params
 		//Creates the DocBook with tags replaced
@@ -50,29 +60,85 @@ public class TagTransform extends DBTransformer {
 		params.clear();
 		
 		//PDF extension XSL
-		File fo_base = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo_base.xsl").getFile());
-		File fo_trans = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo_trans.xsl").getFile());
-		File fo_ext = new File(tagGenDir + File.separator + "fo_ext.xsl");
-		//Create extension XSL and replace it if it exists prior
-		if (fo_ext.exists())
+		File foXSL = getFile(xslPath + File.separator + "fo" + File.separator + "docbook.xsl");
+		String foPath = foXSL.toURI().toString();
+		params.put("data_loc", dataPath);
+		params.put("original_loc", foPath);
+		createExtension("fo", tagGenPath, params);
+		params.clear();
+		
+		//HTML extension XSL
+		File htmlXSL = getFile(xslPath + File.separator + "html" + File.separator + "docbook.xsl"); 
+		String htmlPath = htmlXSL.toURI().toString();
+		params.put("data_loc", dataPath);
+		params.put("original_loc", htmlPath); 
+		createExtension("html", tagGenPath, params);
+		
+		//Delete the no longer needed data files in tag_gen/data
+		try {
+			deleteDir(dataDir); 
+		} catch (IOException e) {
+			LOGGER.error("Cannot delete dir"); 
+			e.printStackTrace();
+			System.exit(1);
+		}
+		if (!dataDir.delete()) {
+			LOGGER.error("Canot delete data dir"); 
+			System.exit(1);
+		}
+	}
+	
+	//Function to create the XSL extension files. (Ex: FO (PDF), HTML)
+	private void createExtension(String type, String tagGen, HashMap<String, String> params) {
+		//Get the base template and style sheet from tag_transformations resource folder
+		File base = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "_base.xsl").getFile());
+		File trans = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "_trans.xsl").getFile());
+		//Create output extension XSL and replace it if it exists prior
+		File ext = new File(tagGen + File.separator + type + "_ext.xsl");
+		if (ext.exists())
 		{
-			fo_ext.delete(); 
+			ext.delete(); 
 		}
 		try {
-			fo_ext.createNewFile();
+			ext.createNewFile();
 		} catch (IOException e) {
 			LOGGER.error("Cannot create resulting file. Printing stack trace: \n ");
 			e.printStackTrace();
 			System.exit(1);
 		}
-		//Get path of the original DocBook XSL for FO
-		File fo_xsl = getFile(xslPath + File.separator + "fo" + File.separator + "docbook.xsl");
-		String fo_path = fo_xsl.toURI().toString();
-		params.put("data_loc", dataPath);
-		params.put("original_loc", fo_path);
-		applyWithParams(fo_base, fo_trans, fo_ext, params);
-		params.clear();
-		
-		//HTML extension XSL
+		applyWithParams(base, trans, ext, params);
+	}
+	
+	//Recursively delete a directory 
+	private void deleteDir(File dir) throws IOException {
+		for(File file: dir.listFiles()) {
+			if (file.isFile()) {
+				if (!file.delete()) {
+					throw new IOException("Unable to delete file");
+				}
+			} else if (file.isDirectory()) {
+				deleteDir(file);
+			}
+		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

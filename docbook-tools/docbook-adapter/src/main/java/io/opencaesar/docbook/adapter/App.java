@@ -46,11 +46,13 @@ public class App {
 	
 	@Parameter(
 		names = { "--xsl", "-x" },
-		description = "Path to the required XSL. (Required) Different for each type: " +
-				"Tag: Path to the original DocBook XSLs" +
-				"PDF: Path to the extension PDF XSL (created in results/tag_gen when Tag is previously executed: fo_ext.xsl)" +
-				"HTML: Path to the extension HTML XSL (created in results/tag_gen when Tag is previously executed: pdf_ext.xsl)" +
-				"For original render for tag/html, give the path of the original DocBook XSL",
+		description = "Path to the required XSL. (Required) Different for each type: \n" +
+				"Tag: Path to the original DocBook XSLs\n" +
+				"PDF: Path to the extension PDF XSL (created in results/tag_gen when Tag is previously executed: fo_ext.xsl) \n" +
+				"HTML: Path to the extension HTML XSL (created in results/tag_gen when Tag is previously executed: html_ext.xsl) \n" +
+				"For original render for tag/html, give the path of the original DocBook XSL: \n" +
+				"PDF: should be located in path/to/dockbook_xsl/fo/docbook.xsl \n" + 
+				"HTML: should be located in path/to/dockbook_xsl/html/dockbook.xsl \n",
 		required = true,
 		order = 4)
 	private String xslPath;

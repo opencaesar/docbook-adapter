@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -40,12 +39,8 @@ public class PDFTransform extends DBTransformer {
 			temp = File.createTempFile("intermediate", ".xml", getResult().getParentFile());
 			temp.deleteOnExit();
 			//Apply XML -> XML-FO transformation
-			//applyTransformation(getInput(), getStyle(), temp);
-			HashMap<String, String> params = new HashMap<String, String>(); 
-			String ext = getResult().getParent() + "test_layer.xsl";
-			params.put("ext", ext);
-			applyWithParams(getInput(), getStyle(), temp, params); 
-			LOGGER.info("Now apply FOP to PDF");
+			applyTransformation(getInput(), getStyle(), temp);
+			LOGGER.info("Now apply FOP to convert FO to PDF");
 			//Apply XML-FO -> PDF transformation
 			applyFOP(temp, getResult());
 		} catch (IOException e) {
@@ -75,5 +70,4 @@ public class PDFTransform extends DBTransformer {
 			System.exit(1);
 		}
 	}
-
 }
