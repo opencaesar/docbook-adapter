@@ -25,6 +25,8 @@
     </xsl:template>
     
     <!-- Import the necessary extensions here --> 
+    <xsl:include href="fo_common.xsl"/>
     <xsl:include href="fo_header.xsl"/>
+    <xsl:include href="fo_footer.xsl"/>
     
 </xsl:stylesheet>

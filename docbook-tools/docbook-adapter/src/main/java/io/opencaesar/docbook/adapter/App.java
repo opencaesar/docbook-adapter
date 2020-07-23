@@ -64,6 +64,12 @@ public class App {
 		order = 5)
 	private String framePath = null;
 	
+	@Parameter(
+		names = { "--save", "-s" },
+		description = "Save the data. Will overwrite data in tag_gen/data (optional)",
+		required = false,
+		order = 6)
+	public boolean save = false;
 
 	@Parameter(
 		names = { "-d", "--debug" },
@@ -78,7 +84,7 @@ public class App {
 		order =10)
 	private boolean help;
 	
-	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/all_transformations.xsl").getFile();
+	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/tag/all_transformations.xsl").getFile();
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);

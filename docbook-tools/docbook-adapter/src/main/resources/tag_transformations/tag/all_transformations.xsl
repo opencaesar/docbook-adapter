@@ -22,5 +22,6 @@
     <xsl:include href="getValue.xsl"/>
     <xsl:include href="getTable.xsl"/>
     <xsl:include href="createHeader.xsl"/>
+    <xsl:include href="createFooter.xsl"/>
 
 </xsl:stylesheet>

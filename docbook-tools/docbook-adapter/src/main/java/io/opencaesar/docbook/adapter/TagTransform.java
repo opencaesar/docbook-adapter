@@ -41,7 +41,7 @@ public class TagTransform extends DBTransformer {
 		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
 		if (dataDir.exists()) {
 			LOGGER.info("Please remove data from result/tag_gen. Operation exiting.");
-			System.exit(1);
+			//System.exit(1);
 		}
 		dataDir.mkdir();
 		String tagGenPath = tagGenDir.toString();
@@ -74,6 +74,7 @@ public class TagTransform extends DBTransformer {
 		params.put("original_loc", htmlPath); 
 		createExtension("html", tagGenPath, params);
 		
+		/*
 		//Delete the no longer needed data files in tag_gen/data
 		try {
 			deleteDir(dataDir); 
@@ -86,13 +87,14 @@ public class TagTransform extends DBTransformer {
 			LOGGER.error("Canot delete data dir"); 
 			System.exit(1);
 		}
+		*/
 	}
 	
 	//Function to create the XSL extension files. (Ex: FO (PDF), HTML)
 	private void createExtension(String type, String tagGen, HashMap<String, String> params) {
 		//Get the base template and style sheet from tag_transformations resource folder
-		File base = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "_base.xsl").getFile());
-		File trans = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "_trans.xsl").getFile());
+		File base = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "/" + type + "_base.xsl").getFile());
+		File trans = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "/" + type + "_trans.xsl").getFile());
 		//Create output extension XSL and replace it if it exists prior
 		File ext = new File(tagGen + File.separator + type + "_ext.xsl");
 		if (ext.exists())
