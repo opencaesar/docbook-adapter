@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -68,6 +70,14 @@ public class App {
 		required = false,
 		order = 5)
 	String framePath = null;
+	
+	@Parameter(
+			names = { "--xsl", "-x" },
+			description = "Path to the DocBook XSLs (Required for tag replacement, otherwise optional)",
+			required = false,
+			order = 5)
+	String xslPath = null;
+	
 
 	@Parameter(
 		names = { "--fo", "-z" },
@@ -90,9 +100,9 @@ public class App {
 	private boolean help;
 	
 	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/all_transformations.xsl").getFile();
-	private static String html_path =  Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/html/docbook.xsl").getFile();
-	private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/fo/docbook.xsl").getFile();
-	//private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("tag_transformations/test_layer.xsl").getFile();
+	private static String html_path =  "";//Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/html/docbook.xsl").getFile();
+	//private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/fo/docbook.xsl").getFile();
+	private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo_ext.xsl").getFile();
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);
@@ -188,7 +198,6 @@ public class App {
 		public DBTransformer(String inputPath, String stylePath, String resultPath) {
 			input = getFile(inputPath); 
 			style = getFile(stylePath); 
-			//Create the resulting file and overwrite if it previously exists
 			//Double check if input and result are the same (error if they are)
 			result = new File(resultPath);
 			if (result.getAbsoluteFile().equals(input.getAbsoluteFile()))
@@ -196,6 +205,7 @@ public class App {
 				//Input and result are the same, return err msg and exit
 				exitPrint("Error: Result and input are at the same location. Please change one"); 
 			}
+			//Create the resulting file and overwrite if it previously exists
 			if (result.exists())
 			{
 				result.delete(); 
@@ -222,23 +232,23 @@ public class App {
 			return result;
 		}
 		
+		//Function to override
 		public abstract void apply(); 		
 	}
 	
 	/**
 	 * Class that implements DBTransform.
-	 * Used for HTML
+	 * Used for HTML. Applies the appropriate XSL to get HTML format
 	 */
-	public class SimpleTransform extends DBTransformer {
+	public class HTMLTransform extends DBTransformer {
 		
-		public SimpleTransform (String inputPath, String stylePath, String resultPath) {
+		public HTMLTransform (String inputPath, String stylePath, String resultPath) {
 			super(inputPath, stylePath, resultPath);
 		}
 
 		@Override
 		public void apply() {
 			applyTransformation(getInput(), getStyle(), getResult()); 
-			
 		}
 	}
 	
@@ -272,7 +282,11 @@ public class App {
 					}
 				}
 				//Apply XML -> XML-FO transformation
-				applyTransformation(getInput(), getStyle(), temp);
+				//applyTransformation(getInput(), getStyle(), temp);
+				HashMap<String, String> params = new HashMap<String, String>(); 
+				String ext = getResult().getParent() + "test_layer.xsl";
+				params.put("ext", ext);
+				applyWithParams(getInput(), getStyle(), temp, params); 
 				LOGGER.info("Now apply FOP to PDF");
 				//Apply XML-FO -> PDF transformation
 				applyFOP(temp, getResult());
@@ -286,8 +300,11 @@ public class App {
 	}
 	
 	/**
-	 * Class that implements DBTransform
-	 * Used for tag replacement. Requires the file path of the frames that will be used.
+	 * Class that implements DBTransform 
+	 * Used for tag replacement and creates PDF and HTML extension XSLs
+	 * The extension XSLs will be placed in results/tag_gen
+	 * Requires the file path of the frames referenced in the tags
+	 * Requires the file path to the DocBook XSL folder
 	 */
 	public class TagTransform extends DBTransformer {
 		public TagTransform (String inputPath, String stylePath, String resultPath) {
@@ -295,35 +312,68 @@ public class App {
 			if (framePath == null) {
 				exitPrint("For tag transformation the -f  paramater is required");
 			}
+			if (xslPath == null) {
+				exitPrint("For tag transformation the -x paramter is required");
+			}
 		}
 
 		@Override
 		public void apply() {
+			//Create dir that holds the additional files created for pdf and html extensions
+			//Tag_gen: holds the pdf and html xsl 
+			String resultDir = getResult().getParentFile().getAbsolutePath().toString();
+			LOGGER.info(resultDir);
+			File tagGenDir = new File(resultDir + File.separator + "tag_gen"); 
+			if (!tagGenDir.exists()) {
+				tagGenDir.mkdir();
+			} else {
+				LOGGER.info("Tag gen exists");
+			}
+			File dataLoc = getFile(resultPath + File.separator + "tag_gen" + File.separator + "data");
+			String dataPath = dataLoc.toURI().toString();
+			
+			//Tag replacement: Set necessary params
+			//Creates the DocBook with tags replaced
+			//Creates data files that the PDF and HTML extension XSLs will reference
 			File frameFolder = getFile(framePath); 
-			String absPath = frameFolder.toURI().toString();
-			applyWithParam(getInput(), getStyle(), getResult(), "filePath", absPath); 
+			String framePath = frameFolder.toURI().toString();
+			HashMap<String, String> params = new HashMap<String, String>();
+			params.put("framePath", framePath);
+			applyWithParams(getInput(), getStyle(), getResult(), params); 
+			params.clear();
+			
+			//PDF extension XSL
+			File fo_base = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo_base.xsl").getFile());
+			File fo_trans = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo_trans.xsl").getFile());
+			File fo_ext = new File(tagGenDir + File.separator + "fo_ext.xsl");
+			//Create extension XSL and replace it if it exists prior
+			if (fo_ext.exists())
+			{
+				fo_ext.delete(); 
+			}
+			try {
+				fo_ext.createNewFile();
+			} catch (IOException e) {
+				LOGGER.error("Cannot create resulting file. Printing stack trace: \n ");
+				e.printStackTrace();
+				System.exit(1);
+			}
+			//Get path of the original DocBook XSL for FO
+			File fo_xsl = getFile(xslPath + File.separator + "fo" + File.separator + "docbook.xsl");
+			String fo_path = fo_xsl.toURI().toString();
+			params.put("data_loc", dataPath);
+			params.put("original_loc", fo_path);
+			applyWithParams(fo_base, fo_trans, fo_ext, params);
 		}
 	}
 	
 	
 	/**
-	 * Applies an XSLT on a given xml file using the Saxon HE XSL processor
-	 * @param input: File path of the input xml to apply the XSLT to
-	 * @param sheet: File path of the XSL that will be applied
-	 * @param result: File path of the resulting xml file
+	 * Creates an empty params and calls on applyWithParams, which does the work
 	 */
 	private void applyTransformation(File input, File style, File res) {
-		try {
-			Configuration config = new Configuration(); 
-			config.setXIncludeAware(true);
-			Transformer transformer = new TransformerFactoryImpl(config)
-					.newTransformer(new StreamSource(style));
-			transformer.transform(new StreamSource(input), new StreamResult(res));
-		} catch (TransformerException e) {
-			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
-			e.printStackTrace();
-			System.exit(1);
-		}
+		HashMap<String, String> params = new HashMap<String, String>(); 
+		applyWithParams(input, style, res, params);
 	}
 	
 	/**
@@ -331,16 +381,19 @@ public class App {
 	 * @param input: File path of the input xml to apply the XSLT to
 	 * @param sheet: File path of the XSL that will be applied
 	 * @param result: File path of the resulting xml file
-	 * @param paramName: String name of the var in the XSL
-	 * @param value: Value given to the var in the XSL
+	 * @param params: HashMap<String, String>; key = paramName value = paramValue
 	 */
-	private void applyWithParam(File input, File style, File res, String paramName, String value) {
+	private void applyWithParams(File input, File style, File res, Map<String, String> params) {
 		try {
 			Configuration config = new Configuration(); 
 			config.setXIncludeAware(true);
 			Transformer transformer = new TransformerFactoryImpl(config)
 					.newTransformer(new StreamSource(style));
-			transformer.setParameter(paramName, value);
+			//Add parms to transformer
+			params.forEach((key, value) -> {
+				LOGGER.info(key + ": " + value);
+				transformer.setParameter(key, value);
+			});
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
@@ -398,14 +451,12 @@ public class App {
 			case "pdf":
 				return new PDFTransform(inputPath, pdf_path, result + ".pdf");
 			case "html":
-				return new SimpleTransform(inputPath, html_path, result + ".html");
+				return new HTMLTransform(inputPath, html_path, result + ".html");
 			default: 
 				exitPrint(type + " is not a supported type. Please choose tag, pdf, or html");
 				return null;
 		}
 	}
-	
-	
 }
 
 

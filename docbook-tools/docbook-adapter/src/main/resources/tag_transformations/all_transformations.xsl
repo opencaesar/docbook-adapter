@@ -4,12 +4,16 @@
     exclude-result-prefixes="#all"
     version="2.0">
     <!-- Global Param holding the file path of the query folder -->
-    <xsl:param name="filePath"/>
+    <xsl:param name="framePath"/>
+    <xsl:param name="foPath"/>
+    <xsl:param name="htmlPath"/>
     <!-- Copy all the xml and apply the templates at the specified nodes -->
     <xsl:template match="@*|node()">
         <xsl:copy >
             <xsl:apply-templates select="@*|node()">
-            	<xsl:with-param name="file" select="$filePath" tunnel="yes"/>
+            	<xsl:with-param name="frame" select="$framePath" tunnel="yes"/>
+                <xsl:with-param name="fo" select="$foPath" tunnel="yes"/>
+                <xsl:with-param name="html" select="$htmlPath" tunnel="yes"/>
             </xsl:apply-templates>
         </xsl:copy>
     </xsl:template>
@@ -17,5 +21,6 @@
     <!-- Include XSLT style sheets for performing tag replacements -->
     <xsl:include href="getValue.xsl"/>
     <xsl:include href="getTable.xsl"/>
+    <xsl:include href="createHeader.xsl"/>
 
 </xsl:stylesheet>

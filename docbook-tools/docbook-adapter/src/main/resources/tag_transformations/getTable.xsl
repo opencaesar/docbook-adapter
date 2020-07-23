@@ -8,7 +8,7 @@
     version="2.0">
     <!-- Given a frame and columns, genereate a table -->
     <xsl:template match="//*[local-name() = 'getTable']">
-        <xsl:param name="file" tunnel="yes"/>
+        <xsl:param name="frame" tunnel="yes"/>
         <!-- Title is optional; Use table for title and informalTable otherwise -->
         <xsl:choose>
             <xsl:when test=".[@title]">
@@ -27,9 +27,9 @@
     
     <!-- Table body -->    
     <xsl:template name="tableBody">
-        <xsl:param name="file" tunnel="yes"/>
-        <xsl:variable name="filePath"> 
-            <xsl:value-of select="$file"/><xsl:value-of select="@frame"/>
+        <xsl:param name="frame" tunnel="yes"/>
+        <xsl:variable name="framePath"> 
+            <xsl:value-of select="$frame"/><xsl:value-of select="@frame"/>
         </xsl:variable>
         <xsl:variable name="colList"><xsl:value-of select="@colList"/></xsl:variable>
         <!-- Token is optional; use user input if given, otherwise use $ as default separateor -->
@@ -52,7 +52,7 @@
             </tr>
         </thead>
         <!-- Create table rows by calling other templates -->
-        <xsl:for-each select="doc($filePath)//*[local-name() = 'result']">
+        <xsl:for-each select="doc($framePath)//*[local-name() = 'result']">
             <xsl:if test="./*[@name = tokenize($colList, $token)]">
                 <xsl:call-template name="generateRow">
                     <xsl:with-param name="result" select="."/>
