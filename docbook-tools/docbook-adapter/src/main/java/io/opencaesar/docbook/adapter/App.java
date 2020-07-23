@@ -27,44 +27,41 @@ public class App {
 		description = "DocBook file to apply the XSLT to (Required)",
 		required = true,
 		order = 1)
-	String inputPath;
+	private String inputPath;
 		
 	@Parameter(
 		names = { "--result", "-r" },
 		description = "Path to the folder to save the result to (Required)",
 		required = true,
 		order = 2)
-	String resultPath;
+	private String resultPath;
 	
 	@Parameter(
 		names = { "--type", "-t" },
 		description = "Type of operation. Options are tag, pdf, or html (Required)",
 		validateWith = TypeValidator.class,
 		required = true,
+		order = 3)
+	private String type;
+	
+	@Parameter(
+		names = { "--xsl", "-x" },
+		description = "Path to the required XSL. (Required) Different for each type: " +
+				"Tag: Path to the original DocBook XSLs" +
+				"PDF: Path to the extension PDF XSL (created in results/tag_gen when Tag is previously executed: fo_ext.xsl)" +
+				"HTML: Path to the extension HTML XSL (created in results/tag_gen when Tag is previously executed: pdf_ext.xsl)" +
+				"For original render for tag/html, give the path of the original DocBook XSL",
+		required = true,
 		order = 4)
-	String type;
+	private String xslPath;
 	
 	@Parameter(
 		names = { "--frames", "-f" },
 		description = "Path to the folder to save the result to (Required for tag replacement, otherwise optional)",
 		required = false,
 		order = 5)
-	String framePath = null;
+	private String framePath = null;
 	
-	@Parameter(
-			names = { "--xsl", "-x" },
-			description = "Path to the DocBook XSLs (Required for tag replacement, otherwise optional)",
-			required = false,
-			order = 5)
-	String xslPath = null;
-	
-
-	@Parameter(
-		names = { "--fo", "-z" },
-		description = "Option to save the intermediate FO representation for PDFs when using the PDF option (Optional)",
-		required = false,
-		order = 6)
-	boolean fo = false;
 
 	@Parameter(
 		names = { "-d", "--debug" },
@@ -80,9 +77,6 @@ public class App {
 	private boolean help;
 	
 	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/all_transformations.xsl").getFile();
-	private static String html_path =  "";//Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/html/docbook.xsl").getFile();
-	//private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("docbook_xsl/fo/docbook.xsl").getFile();
-	private static String pdf_path = Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo_ext.xsl").getFile();
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);
@@ -173,9 +167,9 @@ public class App {
 			case "tag":
 				return new TagTransform(inputPath, tag_path, result + ".xml", framePath, xslPath);
 			case "pdf":
-				return new PDFTransform(inputPath, pdf_path, result + ".pdf");
+				return new PDFTransform(inputPath, xslPath, result + ".pdf");
 			case "html":
-				return new HTMLTransform(inputPath, html_path, result + ".html");
+				return new HTMLTransform(inputPath, xslPath, result + ".html");
 			default: 
 				LOGGER.error(type + " is not a supported type. Please choose tag, pdf, or html");
 				return null;

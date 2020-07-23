@@ -14,17 +14,14 @@ import java.util.HashMap;
 public class TagTransform extends DBTransformer {
 	private String framePath;
 	private String xslPath; 
-	
+
 	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String xsl) {
 		super(inputPath, stylePath, resultPath);
 		if (frame == null) {
 			exitPrint("For tag transformation the -f  paramater is required");
 		}
 		framePath = frame;
-		if (xsl == null) {
-			exitPrint("For tag transformation the -x paramter is required");
-		}
-		xslPath = xsl; 
+		xslPath= xsl;
 	}
 
 	@Override
