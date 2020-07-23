@@ -136,8 +136,8 @@ public class App {
 		LOGGER.info("=================================================================");
 		LOGGER.info("DocBook: " + inputPath);
 		LOGGER.info("Result location: " + resultPath);
-		//Get DBTransform class 
-		DBTransform trans = getTransformer(inputPath, resultPath, type); 
+		//Get DBTransformer class 
+		DBTransformer trans = getTransformer(inputPath, resultPath, type); 
 		trans.apply();
 		
 	    LOGGER.info("=================================================================");
@@ -176,21 +176,12 @@ public class App {
 	}
 	
 	/**
-	 * 
-	 * Interface for Strategy design pattern
-	 *
-	 */
-	public interface DBTransform{
-		void apply(); 
-	}
-	
-	/**
-	 * Abstract superclass for Strategy design pattern
+	 * Inheritance superclass
 	 * @param inputPath: File path of the xml file to apply the style sheet to
 	 * @param stylePath: File path of the xsl file that will be applied to the input
 	 * @param resultPath: File path of the resulting file 
 	 */
-	abstract class DBTransformer implements DBTransform{
+	abstract class DBTransformer{
 		private File input; 
 		private File style; 
 		private File result;
@@ -364,6 +355,9 @@ public class App {
 			params.put("data_loc", dataPath);
 			params.put("original_loc", fo_path);
 			applyWithParams(fo_base, fo_trans, fo_ext, params);
+			params.clear();
+			
+			//HTML extension XSL
 		}
 	}
 	
@@ -440,7 +434,7 @@ public class App {
 	}
 	
 	//Get style sheet depending on task
-	private DBTransform getTransformer(String inputPath, String resultPath, String type) {
+	private DBTransformer getTransformer(String inputPath, String resultPath, String type) {
 		//Use the inputPath's file name as the output's name
 		File input = getFile(inputPath); 
 		String resultName = input.getName().substring(0, input.getName().lastIndexOf(".")); 
