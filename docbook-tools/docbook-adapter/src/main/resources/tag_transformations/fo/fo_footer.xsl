@@ -33,15 +33,18 @@
                         </xsl:call-template>
                         <!-- Now check right header -->
                         <xsl:call-template name="header_footer_helper">
-                            <xsl:with-param name="position" select="'right'"/>
+                            <xsl:with-param name="position" select="'center'"/>
                             <xsl:with-param name="filePath" select="$filePath"/>
                         </xsl:call-template>
                         <!-- Now check center -->
-                        <axsl:when test="$position = 'center'">
+                        <axsl:when test="$position = 'right'">
+                            <xsl:call-template name="h_f_content">
+                                <xsl:with-param name="position" select="'right'"/>
+                                <xsl:with-param name="filePath" select="$filePath"/>
+                            </xsl:call-template>
                             <fo:block>
                                 <fo:page-number/>
                             </fo:block>
-                            <xsl:call-template name="h_f_content"/>
                         </axsl:when>
                     </axsl:choose>
                 </fo:block>

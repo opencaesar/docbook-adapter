@@ -3,6 +3,8 @@ package io.opencaesar.docbook.adapter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Class that implements DBTransform 
@@ -41,7 +43,7 @@ public class TagTransform extends DBTransformer {
 		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
 		if (dataDir.exists()) {
 			LOGGER.info("Please remove data from result/tag_gen. Operation exiting.");
-			//System.exit(1);
+			System.exit(1);
 		}
 		dataDir.mkdir();
 		String tagGenPath = tagGenDir.toString();
@@ -49,13 +51,23 @@ public class TagTransform extends DBTransformer {
 		LOGGER.info(tagGenPath);
 		LOGGER.info(dataPath);
 		
-		//Tag replacement: Set necessary params
-		//Creates the DocBook with tags replaced
-		//Creates data files that the PDF and HTML extension XSLs will reference
+		/**
+		 * Tag replacement: Set necessary params
+		 * Creates the DocBook with tags replaced
+		 * Creates data files that the PDF and HTML extension XSLs will reference
+		 * Currently used params for tag replacement:
+		 * Framepath: file path to the frames that are used for the queries 
+		 * currDate: current date
+		 */
+		HashMap<String, String> params = new HashMap<String, String>();
 		File frameFolder = getFile(framePath); 
 		String framePath = frameFolder.toURI().toString();
-		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("framePath", framePath);
+		LocalDate date = LocalDate.now();
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/YYYY");
+		String currDate = date.format(format); 
+		LOGGER.info(currDate);
+		params.put("currDate", currDate);
 		applyWithParams(getInput(), getStyle(), getResult(), params); 
 		params.clear();
 		
@@ -74,7 +86,6 @@ public class TagTransform extends DBTransformer {
 		params.put("original_loc", htmlPath); 
 		createExtension("html", tagGenPath, params);
 		
-		/*
 		//Delete the no longer needed data files in tag_gen/data
 		try {
 			deleteDir(dataDir); 
@@ -87,7 +98,6 @@ public class TagTransform extends DBTransformer {
 			LOGGER.error("Canot delete data dir"); 
 			System.exit(1);
 		}
-		*/
 	}
 	
 	//Function to create the XSL extension files. (Ex: FO (PDF), HTML)

@@ -92,10 +92,10 @@ abstract class DBTransformer{
 	
 	/**
 	 * Applies an XSLT on a given xml file using the Saxon HE XSL processor and sets a global param used in the XSLT
-	 * @param input: File path of the input xml to apply the XSLT to
-	 * @param sheet: File path of the XSL that will be applied
-	 * @param result: File path of the resulting xml file
-	 * @param params: HashMap<String, String>; key = paramName value = paramValue
+	 * @param input File path of the input xml to apply the XSLT to
+	 * @param style File path of the XSL that will be applied
+	 * @param res File path of the resulting xml file
+	 * @param params HashMap(String, String); key = paramName value = paramValue
 	 */
 	public void applyWithParams(File input, File style, File res, Map<String, String> params) {
 		try {

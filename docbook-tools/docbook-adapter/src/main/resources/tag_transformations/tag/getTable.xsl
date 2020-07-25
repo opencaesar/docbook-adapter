@@ -3,8 +3,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns='http://docbook.org/ns/docbook'
-    xmlns:oc="https://github.com/opencaesar/docbook-tools"
-    exclude-result-prefixes="xs oc"
+    exclude-result-prefixes="xs"
     version="2.0">
     <!-- Given a frame and columns, genereate a table -->
     <xsl:template match="//*[local-name() = 'getTable']">
