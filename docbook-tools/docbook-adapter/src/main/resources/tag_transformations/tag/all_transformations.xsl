@@ -28,6 +28,6 @@
     <xsl:include href="createHeader.xsl"/>
     <xsl:include href="createFooter.xsl"/>
     <xsl:include href="signature.xsl"/>
-    <xsl:include href="date.xsl"/>
+    <xsl:include href="getDate.xsl"/>
 
 </xsl:stylesheet>
