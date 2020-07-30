@@ -7,7 +7,7 @@
     <!-- Adds the necessary import statement to format a title page --> 
     <xsl:namespace-alias stylesheet-prefix="axsl" result-prefix="xsl"/>
     
-    <xsl:template match = "//*[local-name() = 'import_title_format']">
+    <xsl:template match = "//*[local-name() = 'import_title']">
         <xsl:param name="data" tunnel="yes"/>
         <!-- Data has the location of tag_gen/data; append the file name -->
         <!-- File name: title.xml -->
@@ -17,9 +17,9 @@
         <xsl:variable name="filePath">
             <xsl:value-of select="$data"/><xsl:value-of select="$fileName"/>
         </xsl:variable>
-        <xsl:message><xsl:value-of select="$filePath"/></xsl:message>
+        <!-- If the title.xml file is in tag_gen, import the title format xsl -->
+        <!-- If the file isn't available, it will replace the tag in fo_base with nothing -->
         <xsl:if test="doc-available($filePath)">
-            <xsl:message>?</xsl:message>
             <axsl:include href="fo_title.xsl"/>
         </xsl:if>
     </xsl:template>

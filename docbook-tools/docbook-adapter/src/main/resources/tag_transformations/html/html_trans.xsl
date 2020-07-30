@@ -25,8 +25,8 @@
     </xsl:template>
     
     <!-- Import the necessary extensions here --> 
-    <!--
     <xsl:include href="html_header_footer.xsl"/>
+    <!--
     <xsl:incldue href="html_title_format.xsl"/>
     -->
     

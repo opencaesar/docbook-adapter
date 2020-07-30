@@ -8,9 +8,7 @@
     <!--<import_title/>-->
     
     <!-- Tags that will be replaced with the template chnages -->
-    <!--
     <header frame="header_info.xsl"/>
     <footer frame="footer_info.xsl"/>
-    -->
     
 </xsl:stylesheet>

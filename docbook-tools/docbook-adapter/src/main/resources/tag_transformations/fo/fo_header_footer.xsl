@@ -7,8 +7,8 @@
     exclude-result-prefixes="xs"
     version="2.0">
     <xsl:namespace-alias stylesheet-prefix="axsl" result-prefix="xsl"/>
-    <!--Uses fo_common (include statement not written to avoid multiple inclusions-->
     
+    <!-- Create header --> 
     <xsl:template match = "//*[local-name() = 'header']">
         <xsl:param name="data" tunnel="yes"/>
         <!-- Data has the location of tag_gen/data; append the file name -->
@@ -23,6 +23,7 @@
         </xsl:call-template>
     </xsl:template>
     
+    <!-- Create footer -->
     <xsl:template match = "//*[local-name() = 'footer']">
         <xsl:param name="data" tunnel="yes"/>
         <!-- Data has the location of tag_gen/data; append the file name -->
