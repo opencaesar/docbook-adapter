@@ -22,7 +22,8 @@ dependencies {
 	implementation "com.github.galigator.openllet:openllet-jena:2.6.5"
 	implementation "net.sf.saxon:Saxon-HE:9.9.+"
 	implementation "org.apache.xmlgraphics:fop:1.0"
-	implementation "net.sf.docbook:docbook-xsl:1.79.1"
+	//implementation "net.sf.docbook:docbook-xsl:1.79.1"
+	implementation "xalan:xalan:2.7.1"
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }

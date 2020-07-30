@@ -27,19 +27,17 @@ abstract class DBTransformer{
 	public abstract void apply(); 	
 	
 	public DBTransformer(String inputPath, String stylePath, String resultPath) {
+		LOGGER = LogManager.getLogger("DocBook Adapter");
 		input = getFile(inputPath); 
 		style = getFile(stylePath); 
-		LOGGER = LogManager.getLogger("DocBook Adapter");
 		//Double check if input and result are the same (error if they are)
 		result = new File(resultPath);
-		if (result.getAbsoluteFile().equals(input.getAbsoluteFile()))
-		{
+		if (result.getAbsoluteFile().equals(input.getAbsoluteFile())) {
 			//Input and result are the same, return err msg and exit
 			exitPrint("Error: Result and input are at the same location. Please change one"); 
 		}
 		//Create the resulting file and overwrite if it previously exists
-		if (result.exists())
-		{
+		if (result.exists()) {
 			result.delete(); 
 		}
 		try {

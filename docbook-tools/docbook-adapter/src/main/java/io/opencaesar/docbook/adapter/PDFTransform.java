@@ -18,6 +18,7 @@ import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.TransformerFactoryImpl;
 
 /**
@@ -53,11 +54,16 @@ public class PDFTransform extends DBTransformer {
 	
 	//Applies the FOP transformation that transform a XML-FO into PDF
 	private void applyFOP(File input, File result) {
-		FopFactory fopFact = FopFactory.newInstance();
+		//For the baseURL (which is used for things such as relative pathing for imgs) use the directory of the input docbook
 		try {
+			FopFactory fopFact = FopFactory.newInstance();
+			String baseURL = input.getParentFile().toURI().toURL().toString();
+			fopFact.setBaseURL(baseURL);
 			OutputStream out = new BufferedOutputStream(new FileOutputStream(result));
 			Fop fop = fopFact.newFop(MimeConstants.MIME_PDF, out); 
-			Transformer transformer = new TransformerFactoryImpl()
+			Configuration config = new Configuration(); 
+			config.setXIncludeAware(true);
+			Transformer transformer = new TransformerFactoryImpl(config)
 					.newTransformer();
 			Source src = new StreamSource(input);
 		    // Resulting SAX events (the generated FO) must be piped through to FOP

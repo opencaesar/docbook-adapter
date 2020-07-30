@@ -4,10 +4,10 @@
     exclude-result-prefixes="#all"
     version="2.0">
     <!-- Extend the fo extension file to add headers -->
-    <xsl:template match="//*[local-name() = 'createFooter']">
-        <xsl:result-document href="./tag_gen/data/footer_info.xml" >
+    <xsl:template match="//*[local-name() = 'header']">
+        <xsl:result-document href="./tag_gen/data/header_info.xml" >
             <xsl:copy-of select="."/>
         </xsl:result-document>
     </xsl:template>
-    
+
 </xsl:stylesheet>

@@ -2,6 +2,9 @@ package io.opencaesar.docbook.adapter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -43,7 +46,7 @@ public class TagTransform extends DBTransformer {
 		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
 		if (dataDir.exists()) {
 			LOGGER.info("Please remove data from result/tag_gen. Operation exiting.");
-			System.exit(1);
+			//System.exit(1);
 		}
 		dataDir.mkdir();
 		String tagGenPath = tagGenDir.toString();
@@ -57,7 +60,7 @@ public class TagTransform extends DBTransformer {
 		 * Creates data files that the PDF and HTML extension XSLs will reference
 		 * Currently used params for tag replacement:
 		 * Framepath: file path to the frames that are used for the queries 
-		 * currDate: current date
+		 * currDate: current date in MM/dd/YYYY format
 		 */
 		HashMap<String, String> params = new HashMap<String, String>();
 		File frameFolder = getFile(framePath); 
@@ -71,20 +74,40 @@ public class TagTransform extends DBTransformer {
 		applyWithParams(getInput(), getStyle(), getResult(), params); 
 		params.clear();
 		
-		//PDF extension XSL
+		/**
+		 * PDF extension XSL
+		 * Creates fo_ext.xsl which is the xsl file that renders the docbook into PDF 
+		 * Also copy the necessary additional XSLs (fo_title.xsl)
+		 * Currently used params:
+		 * data_loc: file path to tag_gen/data, which holds data files created in the tag replacement step 
+		 * original_loc: file path to the original DocBook XSL file that renders the docbook into XML-FO (which is then processed into PDF)
+		 */
 		File foXSL = getFile(xslPath + File.separator + "fo" + File.separator + "docbook.xsl");
 		String foPath = foXSL.toURI().toString();
 		params.put("data_loc", dataPath);
 		params.put("original_loc", foPath);
 		createExtension("fo", tagGenPath, params);
 		params.clear();
-		
-		//HTML extension XSL
+		//Copy fo_title.xsl from resources to tag_gen 
+		File foTitleIn = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo/fo_data_files/fo_title.xsl").getFile());
+		File foTitleOut = new File(tagGenPath + File.separator + "fo_title.xsl");
+		copy(foTitleIn, foTitleOut);
+		/**
+		 * HTML extension XSL
+		 * Creates html_ext.xsl which is the xsl file that renders the docbook into html 
+		 * Currently used params:
+		 * data_loc: file path to tag_gen/data, which holds data files created in the tag replacement step 
+		 * original_loc: file path to the original DocBook XSL file that renders the docbook into html
+		 */
 		File htmlXSL = getFile(xslPath + File.separator + "html" + File.separator + "docbook.xsl"); 
 		String htmlPath = htmlXSL.toURI().toString();
 		params.put("data_loc", dataPath);
 		params.put("original_loc", htmlPath); 
 		createExtension("html", tagGenPath, params);
+		//Copy html_title.xsl from resources to tag_gen 
+		File htmlTitleIn = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/html/html_data_files/html_title.xsl").getFile());
+		File htmlTitleOut = new File(tagGenPath + File.separator + "html_title.xsl");
+		copy(htmlTitleIn, htmlTitleOut);
 		
 		//Delete the no longer needed data files in tag_gen/data
 		try {
@@ -132,6 +155,17 @@ public class TagTransform extends DBTransformer {
 				deleteDir(file);
 			}
 		}
+	}
+	
+	// Copy resource file from jar to outside of jar 
+	private void copy(File input, File dest) {
+		try {
+            Files.copy(input.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            LOGGER.info("done?");
+        } catch (IOException e) {
+            LOGGER.error("Cannot copy the file: " + input.toString() + ". Printing stack trace \n");
+            e.printStackTrace();
+        }
 	}
 }
 

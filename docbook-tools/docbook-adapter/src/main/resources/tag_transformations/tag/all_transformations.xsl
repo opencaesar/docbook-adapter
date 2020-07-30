@@ -3,6 +3,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     exclude-result-prefixes="#all"
     version="2.0">
+    <xsl:output indent="yes"/>
     <!-- Global Param holding the file path of the query folder -->
     <xsl:param name="framePath"/>
     <xsl:param name="foPath"/>
@@ -25,9 +26,9 @@
     <!-- Include XSLT style sheets for performing tag replacements -->
     <xsl:include href="getValue.xsl"/>
     <xsl:include href="getTable.xsl"/>
-    <xsl:include href="createHeader.xsl"/>
-    <xsl:include href="createFooter.xsl"/>
+    <xsl:include href="header.xsl"/>
+    <xsl:include href="footer.xsl"/>
     <xsl:include href="signature.xsl"/>
-    <xsl:include href="getDate.xsl"/>
-
+    <xsl:include href="currentDate.xsl"/>
+    <xsl:include href="titlePage.xsl"/>
 </xsl:stylesheet>

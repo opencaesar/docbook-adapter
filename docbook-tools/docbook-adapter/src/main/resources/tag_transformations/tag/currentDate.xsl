@@ -6,7 +6,7 @@
     version="2.0">
     
     <!-- Replace the tag with today's date (date that tag replacement was done) -->
-    <xsl:template match="//*[local-name() = 'getDate']">
+    <xsl:template match="//*[local-name() = 'currentDate']">
         <xsl:param name="date" tunnel="yes"/>
         <xsl:value-of select="$date"/>
     </xsl:template>
