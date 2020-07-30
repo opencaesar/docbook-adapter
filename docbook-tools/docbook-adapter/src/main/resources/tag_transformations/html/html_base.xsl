@@ -5,7 +5,7 @@
     exclude-result-prefixes="xs"
     version="1.0">
     <import_original/>
-    <!--<import_title/>-->
+    <import_title/>
     
     <!-- Tags that will be replaced with the template chnages -->
     <header frame="header_info.xsl"/>

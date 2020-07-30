@@ -4,17 +4,17 @@
     xmlns='http://docbook.org/ns/docbook'
     exclude-result-prefixes="xs"
     version="2.0">
-    
     <!-- Template for formatting the title page -->
 
-    <xsl:template match="//*[local-name() = 'titlePage']">
+    <xsl:template match="//*[local-name() = 'titlepage']">
         <xsl:result-document href="./tag_gen/data/title.xml">
             <xsl:copy-of select="."/>
         </xsl:result-document>
         <xsl:apply-templates select="./*"/>
     </xsl:template>
     
-    <xsl:template match="//*[local-name() = 'preparer']">
+    <!-- Preparer tag: Replace with a signature list --> 
+    <xsl:template match="//*[local-name() = 'titlepage']/*[local-name() = 'preparer']">
         <simplelist type='vertical' columns='1'>
             <member>Prepared by</member>
             <member></member>            
@@ -41,4 +41,54 @@
         </simplelist>
     </xsl:template>
     
+    <!-- Functions below replace our defined tags with docbook tags. This is so we give users 
+        more intuitive names to work with, and replace them with actual docbook tags
+        to get the rendering to work properly --> 
+    
+    <!-- Replace docID with the productname docbook tag --> 
+    <xsl:template match="//*[local-name() = 'titlepage']/*[local-name() = 'docID']">
+        <productname>
+            <xsl:value-of select="."/>
+        </productname>
+    </xsl:template>
+    
+    <!-- Replace releaseversion with the textobject docbook tag --> 
+    <xsl:template match="//*[local-name() = 'titlepage']/*[local-name() = 'releaseversion']">
+        <textobject>
+            <xsl:value-of select="."/>
+        </textobject>
+    </xsl:template>
+    
+    <!-- Replace titleimage with a mediaobject docbook tag --> 
+    <xsl:template match="//*[local-name() = 'titlepage']/*[local-name() = 'titleimage']">
+        <mediaobject>
+            <imageobject>
+                <xsl:copy-of select="./*"/>
+            </imageobject>
+        </mediaobject>
+    </xsl:template>
+    
+    <!-- Replace bottomimage with a imageobject docbook tag --> 
+    <xsl:template match="//*[local-name() = 'titlepage']/*[local-name() = 'bottomimage']">
+        <imageobject>
+            <xsl:copy-of select="./*"/>
+        </imageobject>
+    </xsl:template>
+    
 </xsl:stylesheet>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
