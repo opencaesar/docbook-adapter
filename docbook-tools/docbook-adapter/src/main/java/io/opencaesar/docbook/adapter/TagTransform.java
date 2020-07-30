@@ -3,7 +3,6 @@ package io.opencaesar.docbook.adapter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.time.LocalDate;
@@ -35,7 +34,6 @@ public class TagTransform extends DBTransformer {
 		//tag_gen: holds the pdf and html xsl 
 		//tag_gen/data: holds data that the pdf and html xsl will reference. Will be deleted on exit
 		String resultDir = getResult().getParentFile().getAbsolutePath().toString();
-		LOGGER.info(resultDir);
 		File tagGenDir = new File(resultDir + File.separator + "tag_gen"); 
 		if (!tagGenDir.exists()) {
 			tagGenDir.mkdir();
@@ -46,13 +44,11 @@ public class TagTransform extends DBTransformer {
 		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
 		if (dataDir.exists()) {
 			LOGGER.info("Please remove data from result/tag_gen. Operation exiting.");
-			//System.exit(1);
+			System.exit(1);
 		}
 		dataDir.mkdir();
 		String tagGenPath = tagGenDir.toString();
 		String dataPath = dataDir.toURI().toString();
-		LOGGER.info(tagGenPath);
-		LOGGER.info(dataPath);
 		
 		/**
 		 * Tag replacement: Set necessary params
@@ -69,7 +65,6 @@ public class TagTransform extends DBTransformer {
 		LocalDate date = LocalDate.now();
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/YYYY");
 		String currDate = date.format(format); 
-		LOGGER.info(currDate);
 		params.put("currDate", currDate);
 		applyWithParams(getInput(), getStyle(), getResult(), params); 
 		params.clear();
@@ -161,7 +156,6 @@ public class TagTransform extends DBTransformer {
 	private void copy(File input, File dest) {
 		try {
             Files.copy(input.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            LOGGER.info("done?");
         } catch (IOException e) {
             LOGGER.error("Cannot copy the file: " + input.toString() + ". Printing stack trace \n");
             e.printStackTrace();

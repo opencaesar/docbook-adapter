@@ -24,6 +24,8 @@ public class HTMLTransform extends DBTransformer {
 		applyTransformation(getInput(), getStyle(), getResult()); 
 	}
 	
+	//Uses the xalan XSLT processor (rather than Saxon 9.9 he) to support the DocBook 1.0 XSL 
+	//DocBook 1.0 XSL uses a legacy feature that prevents Saxon 9.9 from executing the XSLT
 	@Override
 	public void applyTransformation(File input, File style, File res) {
 		try {
