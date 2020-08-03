@@ -17,22 +17,24 @@ import java.time.format.DateTimeFormatter;
  */
 public class TagTransform extends DBTransformer {
 	private String framePath;
-	private String xslPath; 
+	private String docPath; 
 
-	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String xsl) {
+	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String doc) {
 		super(inputPath, stylePath, resultPath);
 		if (frame == null) {
-			exitPrint("For tag transformation the -f  paramater is required");
+			exitPrint("For tag transformation the -f parameter is required");
+		}
+		if (doc == null) {
+			exitPrint("For tag transformation the -o parameter is required");
 		}
 		framePath = frame;
-		xslPath= xsl;
+		docPath = doc;
 	}
 
 	@Override
 	public void apply() {
-		//In the given result folder, create tag_gen dir
-		//tag_gen: holds the pdf and html xsl 
-		//tag_gen/data: holds data that the pdf and html xsl will reference. Will be deleted on exit
+		//In the given result folder, create a data folder
+		//src-gen/data: holds data that the pdf and html xsl will reference. Will be deleted on exit
 		String resultDir = getResult().getParentFile().getAbsolutePath().toString();
 		File tagGenDir = new File(resultDir + File.separator + "tag_gen"); 
 		if (!tagGenDir.exists()) {
@@ -40,13 +42,12 @@ public class TagTransform extends DBTransformer {
 		} else {
 			LOGGER.info("Overwriting files in tag_gen");
 		}
-		//Create tag_gen/data. Exit operation if data dir exists (avoid accidently deleting user files)
+		//Create tag_gen/data
 		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
 		if (dataDir.exists()) {
-			LOGGER.info("Please remove data from result/tag_gen. Operation exiting.");
+			LOGGER.info("Overwriting data in src-gen/data");
 			System.exit(1);
 		}
-		dataDir.mkdir();
 		String tagGenPath = tagGenDir.toString();
 		String dataPath = dataDir.toURI().toString();
 		
@@ -77,7 +78,7 @@ public class TagTransform extends DBTransformer {
 		 * data_loc: file path to tag_gen/data, which holds data files created in the tag replacement step 
 		 * original_loc: file path to the original DocBook XSL file that renders the docbook into XML-FO (which is then processed into PDF)
 		 */
-		File foXSL = getFile(xslPath + File.separator + "fo" + File.separator + "docbook.xsl");
+		File foXSL = getFile(docPath + File.separator + "fo" + File.separator + "docbook.xsl");
 		String foPath = foXSL.toURI().toString();
 		params.put("data_loc", dataPath);
 		params.put("original_loc", foPath);
@@ -94,7 +95,7 @@ public class TagTransform extends DBTransformer {
 		 * data_loc: file path to tag_gen/data, which holds data files created in the tag replacement step 
 		 * original_loc: file path to the original DocBook XSL file that renders the docbook into html
 		 */
-		File htmlXSL = getFile(xslPath + File.separator + "html" + File.separator + "docbook.xsl"); 
+		File htmlXSL = getFile(docPath + File.separator + "html" + File.separator + "docbook.xsl"); 
 		String htmlPath = htmlXSL.toURI().toString();
 		params.put("data_loc", dataPath);
 		params.put("original_loc", htmlPath); 

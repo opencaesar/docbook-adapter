@@ -28,34 +28,35 @@ public class App {
 		required = true,
 		order = 1)
 	private String inputPath;
-		
-	@Parameter(
-		names = { "--result", "-r" },
-		description = "Path to the folder to save the result to (Required)",
-		required = true,
-		order = 2)
-	private String resultPath;
 	
 	@Parameter(
 		names = { "--type", "-t" },
 		description = "Type of operation. Options are tag, pdf, or html (Required)",
 		validateWith = TypeValidator.class,
 		required = true,
-		order = 3)
+		order = 2)
 	private String type;
 	
 	@Parameter(
 		names = { "--xsl", "-x" },
 		description = "Path to the required XSL. (Required) Different for each type: \n" +
-				"Tag: Path to the original DocBook XSLs\n" +
+				"Tag: Path to the tag replacement XSL \n" +
 				"PDF: Path to the extension PDF XSL (created in results/tag_gen when Tag is previously executed: fo_ext.xsl) \n" +
 				"HTML: Path to the extension HTML XSL (created in results/tag_gen when Tag is previously executed: html_ext.xsl) \n" +
 				"For original render for tag/html, give the path of the original DocBook XSL: \n" +
 				"PDF: should be located in path/to/dockbook_xsl/fo/docbook.xsl \n" + 
 				"HTML: should be located in path/to/dockbook_xsl/html/dockbook.xsl \n",
 		required = true,
-		order = 4)
+		order = 3)
 	private String xslPath;
+	
+	@Parameter(
+		names = { "--original", "-o" },
+		description = "Path to the original DocBook XSLs (Required for tag replacement, otherwise optional)",
+		required = false,
+		order = 4)
+	private String docPath = null;
+
 	
 	@Parameter(
 		names = { "--frames", "-f" },
@@ -84,7 +85,6 @@ public class App {
 		order =10)
 	private boolean help;
 	
-	private static String tag_path =  Thread.currentThread().getContextClassLoader().getResource("tag_transformations/tag/all_transformations.xsl").getFile();
 	
 	private final Logger LOGGER = LogManager.getLogger("DocBook Adapter"); {
 		LOGGER.setLevel(Level.INFO);
@@ -117,9 +117,20 @@ public class App {
 		LOGGER.info("                     DocBook Adapter " + getAppVersion());
 		LOGGER.info("=================================================================");
 		LOGGER.info("DocBook: " + inputPath);
-		LOGGER.info("Result location: " + resultPath);
+		//Create src-gen
+		String srcParent = new File(inputPath).getParentFile().getParent();
+		File srcGen = new File(srcParent + File.separator + "src-gen");
+		if (!srcGen.exists()) {
+			//Create src-gen if it doesn't exist, 
+			if (!srcGen.mkdir()) {
+				//Cannot create src-gen. Exit
+				LOGGER.error("Cannot make src-gen. Exiting");
+				System.exit(1);
+			}
+		}
+		LOGGER.info("Results will be placed in: " + srcGen.getAbsolutePath());
 		//Get DBTransformer class 
-		DBTransformer trans = getTransformer(inputPath, resultPath, type); 
+		DBTransformer trans = getTransformer(inputPath, srcGen.getPath(), type);
 		if (trans != null) {
 			trans.apply();
 		} else {
@@ -162,18 +173,17 @@ public class App {
 	}
 	
 	//Get style sheet depending on task
-	private DBTransformer getTransformer(String inputPath, String resultPath, String type) {
+	private DBTransformer getTransformer(String inputPath, String resultDir, String type) {
 		//Use the inputPath's file name as the output's name
 		File input = new File(inputPath); 
 		if (!input.exists()) {
 			LOGGER.error("Input doesn't exist at: " + inputPath); 
 			return null;
 		}
-		String resultName = input.getName().substring(0, input.getName().lastIndexOf(".")); 
-		String result = resultPath + File.separator + resultName;
+		String result = resultDir + File.separator + input.getName().substring(0, input.getName().lastIndexOf("."));
 		switch (type.toLowerCase()) {
 			case "tag":
-				return new TagTransform(inputPath, tag_path, result + ".xml", framePath, xslPath);
+				return new TagTransform(inputPath, xslPath, result + ".xml", framePath, docPath);
 			case "pdf":
 				return new PDFTransform(inputPath, xslPath, result + ".pdf");
 			case "html":
