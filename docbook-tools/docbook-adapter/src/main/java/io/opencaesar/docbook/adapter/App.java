@@ -183,7 +183,7 @@ public class App {
 		String result = resultDir + File.separator + input.getName().substring(0, input.getName().lastIndexOf("."));
 		switch (type.toLowerCase()) {
 			case "tag":
-				return new TagTransform(inputPath, xslPath, result + ".xml", framePath, docPath);
+				return new TagTransform(inputPath, xslPath, result + ".xml", framePath, docPath, save);
 			case "pdf":
 				return new PDFTransform(inputPath, xslPath, result + ".pdf");
 			case "html":

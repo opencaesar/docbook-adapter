@@ -11,15 +11,21 @@ import java.time.format.DateTimeFormatter;
 /**
  * Class that implements DBTransform 
  * Used for tag replacement and creates PDF and HTML extension XSLs
- * The extension XSLs will be placed in results/tag_gen
- * Requires the file path of the frames referenced in the tags
- * Requires the file path to the DocBook XSL folder
  */
 public class TagTransform extends DBTransformer {
 	private String framePath;
 	private String docPath; 
-
-	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String doc) {
+	private boolean save;
+	
+	/**
+	 * Tag Transform constructor
+	 * @param inputPath file path to the input docbook whose tags will be replaced
+	 * @param stylePath file path to the tag replacement stylesheet 
+	 * @param resultPath file path to the resulting docbook
+	 * @param frame file path to a dir holding the necessary frames used in tag replacement 
+	 * @param doc file path to the dir holding the original docbook XSLs 
+	 */
+	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String doc, boolean saveArg) {
 		super(inputPath, stylePath, resultPath);
 		if (frame == null) {
 			exitPrint("For tag transformation the -f parameter is required");
@@ -29,35 +35,34 @@ public class TagTransform extends DBTransformer {
 		}
 		framePath = frame;
 		docPath = doc;
+		save = saveArg;
 	}
 
 	@Override
 	public void apply() {
 		//In the given result folder, create a data folder
 		//src-gen/data: holds data that the pdf and html xsl will reference. Will be deleted on exit
-		String resultDir = getResult().getParentFile().getAbsolutePath().toString();
-		File tagGenDir = new File(resultDir + File.separator + "tag_gen"); 
-		if (!tagGenDir.exists()) {
-			tagGenDir.mkdir();
-		} else {
-			LOGGER.info("Overwriting files in tag_gen");
-		}
-		//Create tag_gen/data
-		File dataDir = new File(tagGenDir.toString() + File.separator + "data");
+		String srcGen = getResult().getParentFile().getAbsolutePath().toString();
+		//Create src-gen/data
+		File dataDir = new File(srcGen + File.separator + "data");
 		if (dataDir.exists()) {
 			LOGGER.info("Overwriting data in src-gen/data");
-			System.exit(1);
+		} else {
+			if (!dataDir.mkdir()) {
+				//Cannot make data dir 
+				exitPrint("Cannot make src-gen/data. Exiting");
+			}
 		}
-		String tagGenPath = tagGenDir.toString();
 		String dataPath = dataDir.toURI().toString();
-		
+	
 		/**
 		 * Tag replacement: Set necessary params
 		 * Creates the DocBook with tags replaced
 		 * Creates data files that the PDF and HTML extension XSLs will reference
 		 * Currently used params for tag replacement:
-		 * Framepath: file path to the frames that are used for the queries 
+		 * framePath: file path to the frames that are used for the queries 
 		 * currDate: current date in MM/dd/YYYY format
+		 * dataPath: file path to the src-gen/data folder
 		 */
 		HashMap<String, String> params = new HashMap<String, String>();
 		File frameFolder = getFile(framePath); 
@@ -67,27 +72,21 @@ public class TagTransform extends DBTransformer {
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/YYYY");
 		String currDate = date.format(format); 
 		params.put("currDate", currDate);
+		params.put("dataPath", dataPath);
 		applyWithParams(getInput(), getStyle(), getResult(), params); 
 		params.clear();
 		
 		/**
 		 * PDF extension XSL
-		 * Creates fo_ext.xsl which is the xsl file that renders the docbook into PDF 
-		 * Also copy the necessary additional XSLs (fo_title.xsl)
+		 * Creates pdf_ext.xsl which is the xsl file that renders the docbook into PDF 
+		 * Also copy the necessary additional XSLs (pdf_title.xsl)
 		 * Currently used params:
-		 * data_loc: file path to tag_gen/data, which holds data files created in the tag replacement step 
-		 * original_loc: file path to the original DocBook XSL file that renders the docbook into XML-FO (which is then processed into PDF)
+		 * dataPath: file path to tag_gen/data, which holds data files created in the tag replacement step (added in createExt func)
+		 * originalPath: file path to the original DocBook XSL file that renders the docbook into XML-FO (which is then processed into PDF) (added in createExt func)
 		 */
-		File foXSL = getFile(docPath + File.separator + "fo" + File.separator + "docbook.xsl");
-		String foPath = foXSL.toURI().toString();
-		params.put("data_loc", dataPath);
-		params.put("original_loc", foPath);
-		createExtension("fo", tagGenPath, params);
+		createExtension("pdf", srcGen, dataPath, params);
 		params.clear();
-		//Copy fo_title.xsl from resources to tag_gen 
-		File foTitleIn = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo/fo_data_files/fo_title.xsl").getFile());
-		File foTitleOut = new File(tagGenPath + File.separator + "fo_title.xsl");
-		copy(foTitleIn, foTitleOut);
+		
 		/**
 		 * HTML extension XSL
 		 * Creates html_ext.xsl which is the xsl file that renders the docbook into html 
@@ -95,37 +94,80 @@ public class TagTransform extends DBTransformer {
 		 * data_loc: file path to tag_gen/data, which holds data files created in the tag replacement step 
 		 * original_loc: file path to the original DocBook XSL file that renders the docbook into html
 		 */
-		File htmlXSL = getFile(docPath + File.separator + "html" + File.separator + "docbook.xsl"); 
-		String htmlPath = htmlXSL.toURI().toString();
-		params.put("data_loc", dataPath);
-		params.put("original_loc", htmlPath); 
-		createExtension("html", tagGenPath, params);
-		//Copy html_title.xsl from resources to tag_gen 
-		File htmlTitleIn = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/html/html_data_files/html_title.xsl").getFile());
-		File htmlTitleOut = new File(tagGenPath + File.separator + "html_title.xsl");
-		copy(htmlTitleIn, htmlTitleOut);
+		createExtension("html", srcGen, dataPath, params);
 		
-		//Delete the no longer needed data files in tag_gen/data
-		try {
-			deleteDir(dataDir); 
-		} catch (IOException e) {
-			LOGGER.error("Cannot delete dir"); 
-			e.printStackTrace();
-			System.exit(1);
-		}
-		if (!dataDir.delete()) {
-			LOGGER.error("Canot delete data dir"); 
-			System.exit(1);
+		// Delete the no longer needed data files in tag_gen/data unless the save arg is set
+		if (!save) {
+			try {
+				deleteDir(dataDir); 
+			} catch (IOException e) {
+				LOGGER.error("Cannot delete dir"); 
+				e.printStackTrace();
+				System.exit(1);
+			}
+			if (!dataDir.delete()) {
+				LOGGER.error("Canot delete data dir"); 
+				System.exit(1);
+			}
+		} else {
+			LOGGER.info("Data files will be saved to src-gen/data");
 		}
 	}
 	
-	//Function to create the XSL extension files. (Ex: FO (PDF), HTML)
-	private void createExtension(String type, String tagGen, HashMap<String, String> params) {
-		//Get the base template and style sheet from tag_transformations resource folder
-		File base = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "/" + type + "_base.xsl").getFile());
-		File trans = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/" + type + "/" + type + "_trans.xsl").getFile());
+	/**
+	 * Creates the extension XSLs that extend the original docbook XSLs 
+	 * @param type type of extension being created i.e. fo (pdf) or html
+	 * @param srcGen dir of src-gen 
+	 * @param dataPath dir of src-gen/data
+	 * @param params hashMap containing key:param-name value:param-value
+	 */
+	private void createExtension(String type, String srcGen, String dataPath, HashMap<String, String> params) {
+		// Add the dataPath param which points to src-gen/data
+		params.put("dataPath", dataPath);
+		String hold; 
+		//Convert pdf to fo if necessary 
+		if (type.equals("pdf")) {
+			hold = "fo";
+		} else {
+			hold = type; 
+		}
+		// Add the originalPath param which points to the original XSL that is being extending 
+		File xsl = getFile(docPath + File.separator + hold + File.separator + "docbook.xsl");
+		String originalPath = xsl.toURI().toString();
+		params.put("originalPath", originalPath);
+		
+		/* 
+		 * Get to the targeted dir relative to the tag_transformation style sheet (passed in through -x)
+		 * Expected file hierarchy 
+		 * stylesheet-gen
+		 * 		- tag
+		 * 			- {stylesheet passed in}
+		 * 		- {type} 
+		 * 			- {target.xsl} 
+		 */
+		String styleSheetDir = getStyle().getParentFile().getParent();
+		File targetDir = new File(styleSheetDir + File.separator + type);
+		if (!targetDir.exists()) {
+			// Stylesheet not found 
+			LOGGER.error(type + " dir was not found. Expected to be at (relative to the passed in tag stylesheet): ../" + type);
+			System.exit(1);
+		}
+		String targetPath = targetDir.getPath();
+		File base = getFile(targetPath + File.separator + type + "_base.xsl");
+		File trans = getFile(targetPath + File.separator + type + "_trans.xsl");
+		
+		//Create dir for the targeted type's outputs in src-gen/{type}
+		File outputDir = new File(srcGen + File.separator + type); 
+		if (outputDir.exists()) {
+			LOGGER.info("Overwriting files in src-gen/" + type);
+		} else {
+			if (!outputDir.mkdir()) {
+				exitPrint("Cannot create srcGen/" + type + " dir. Exiting");
+			}
+		}
+		
 		//Create output extension XSL and replace it if it exists prior
-		File ext = new File(tagGen + File.separator + type + "_ext.xsl");
+		File ext = new File(outputDir + File.separator + type + "_ext.xsl");
 		if (ext.exists())
 		{
 			ext.delete(); 
@@ -137,7 +179,21 @@ public class TagTransform extends DBTransformer {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
+		//Apply XSL to create the extension XSL output
 		applyWithParams(base, trans, ext, params);
+		
+		/*
+		 * Copy the necessary additional XSLs used in the extension file. 
+		 * Files to be copied should be located in path/to/stylesheets/{type}/data_files
+		 * Files are:
+		 * {type}.title.xsl
+		 */
+		File titleIn = getFile(targetPath + File.separator + "data_files" + File.separator + type + "_title.xsl");
+		File titleOut = new File(outputDir + File.separator + type + "_title.xsl");
+		//File titleIn = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo/fo_data_files/fo_title.xsl").getFile());
+		//File titleOut = new File(tagGenPath + File.separator + "fo_title.xsl");
+		copy(titleIn, titleOut);
 	}
 	
 	//Recursively delete a directory 
