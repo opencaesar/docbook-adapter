@@ -1,0 +1,20 @@
+apply plugin: "maven-publish"
+
+ext.title = 'DocBook stylesheets'
+description = 'Stylesheets used in DocBook-Adapter for tag replacement'
+
+// Zip and publish the stylesheets to local maven
+task stylesheetZip(type: Zip) {
+	from file("src/stylesheets")
+	destinationDir(file("build/libs"))
+	archiveBaseName = project.name
+	archiveVersion = project.version
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      artifact stylesheetZip
+    }
+  }
+}

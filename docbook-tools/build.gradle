@@ -4,14 +4,11 @@ buildscript {
         mavenCentral()
         jcenter()
     }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
-    }
 }
 
 subprojects {
     group = 'io.opencaesar.docbook'
-    version = '0.2.0'
+    version = '0.1.0'
     
     ext.versions = [
         xtext: '2.16.0',
@@ -21,16 +18,12 @@ subprojects {
 
     repositories {
         mavenLocal()
-        maven { url 'https://www.ebi.ac.uk/intact/maven/nexus/content/repositories/public/' }
-        maven { url 'http://code.berkeleybop.org/maven/repository/' }
         mavenCentral()
         jcenter()
     }
     
-    apply plugin: 'com.jfrog.bintray'
     apply plugin: 'java'
     apply plugin: 'eclipse'
-    apply plugin: 'idea'
     
     apply from: "${rootDir}/gradle/source-layout.gradle"
     //apply from: "${rootDir}/gradle/maven-deployment.gradle"

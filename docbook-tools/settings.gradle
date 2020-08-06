@@ -1,1 +1,2 @@
 include 'docbook-adapter'
+include 'docbook-stylesheets'
