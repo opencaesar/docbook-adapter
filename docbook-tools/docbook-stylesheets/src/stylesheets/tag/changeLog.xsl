@@ -100,7 +100,7 @@
                 [local-name() = 'result' and
                 descendant::*[local-name() = 'uri' and . = $commitID] and 
                 descendant::*[local-name() = 'uri' and . = concat($issueNS, $target)]]
-                /*[last()]/*)"/>
+                /*[last()]/*)" separator=", "/>
         </td>
     </xsl:template>
 </xsl:stylesheet>
