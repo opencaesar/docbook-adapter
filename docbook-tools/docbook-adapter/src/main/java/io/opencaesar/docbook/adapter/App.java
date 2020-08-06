@@ -41,8 +41,8 @@ public class App {
 		names = { "--xsl", "-x" },
 		description = "Path to the required XSL. (Required) Different for each type: \n" +
 				"Tag: Path to the tag replacement XSL \n" +
-				"PDF: Path to the extension PDF XSL (created in results/tag_gen when Tag is previously executed: fo_ext.xsl) \n" +
-				"HTML: Path to the extension HTML XSL (created in results/tag_gen when Tag is previously executed: html_ext.xsl) \n" +
+				"PDF: Path to the extension PDF XSL (Tag creates the extension at src-gen/pdf/pdf_ext.xsl) \n" +
+				"HTML: Path to the extension HTML XSL (Tag creates the extension at src-gen/html/html_ext.xsl) \n" +
 				"For original render for tag/html, give the path of the original DocBook XSL: \n" +
 				"PDF: should be located in path/to/dockbook_xsl/fo/docbook.xsl \n" + 
 				"HTML: should be located in path/to/dockbook_xsl/html/dockbook.xsl \n",
@@ -67,7 +67,7 @@ public class App {
 	
 	@Parameter(
 		names = { "--save", "-s" },
-		description = "Save the data. Will overwrite data in tag_gen/data (optional)",
+		description = "Save the data. Will overwrite data in src-gen/data (optional)",
 		required = false,
 		order = 6)
 	public boolean save = false;

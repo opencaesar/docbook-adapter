@@ -33,9 +33,7 @@
         <xsl:param name="framePath"/>
         <!-- Test for the fields to be added --> 
         <xsl:variable name="includeDate" select="not(@hideDate = 'false')" as="xs:boolean"/>
-        <xsl:message select="$includeDate"/>
         <xsl:variable name="includeFiles" select="@showEditedFiles = 'true'" as ="xs:boolean"/>
-        <xsl:message select="$includeFiles"/>
         <informaltable border="1">
             <!-- Create table headers based on tag attributes --> 
             <thead>
@@ -97,39 +95,12 @@
         <!-- Check if the result has a correct commit ID via descedant -->
         <!-- Check if the result has the target via descedant -->
         <!-- Return the object value by going to the last binding (object binding) and getting its value -->
-        <xsl:variable name = "hold">
+        <td>
             <xsl:value-of select="data(document($framePath)/*/*/*
                 [local-name() = 'result' and
                 descendant::*[local-name() = 'uri' and . = $commitID] and 
                 descendant::*[local-name() = 'uri' and . = concat($issueNS, $target)]]
                 /*[last()]/*)"/>
-        </xsl:variable>
-        <xsl:message select="$hold"/>
-        <td>
-            <xsl:value-of select="$hold"/>
         </td>
     </xsl:template>
 </xsl:stylesheet>
-
-<!--
-    
-    <xsl:variable name = "hold">
-            <xsl:value-of select="document($framePath)/*/*/*
-                [local-name() = 'result' and
-                descendant::*[local-name() = 'uri' and . = $commitID] and 
-                descendant::*[local-name() = 'uri' and . = concat($issueNS, $target)]]
-                /*[last()]/*"/>
-        </xsl:variable>
-    
-    <result xmlns="http://www.w3.org/2005/sparql-results#">
-      <binding name="commit">
-        <uri>http://europa.jpl.nasa.gov/issue#Commit1</uri>
-      </binding>
-      <binding name="p">
-        <uri>http://imce.jpl.nasa.gov/foundation/issue/issue#commitMessage</uri>
-      </binding>
-      <binding name="o">
-        <literal>Message of commit 1 </literal>
-      </binding>
-    </result>
-    -->

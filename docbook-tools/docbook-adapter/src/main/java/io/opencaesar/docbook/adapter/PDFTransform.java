@@ -54,13 +54,15 @@ public class PDFTransform extends DBTransformer {
 	
 	//Applies the FOP transformation that transform a XML-FO into PDF
 	private void applyFOP(File input, File result) {
-		//For the baseURL (which is used for things such as relative pathing for imgs) use the directory of the input docbook
 		try {
 			FopFactory fopFact = FopFactory.newInstance();
+			//For the baseURL (which is used for things such as relative pathing for imgs) use the directory of the input docbook
 			String baseURL = input.getParentFile().toURI().toURL().toString();
 			fopFact.setBaseURL(baseURL);
+			
 			OutputStream out = new BufferedOutputStream(new FileOutputStream(result));
 			Fop fop = fopFact.newFop(MimeConstants.MIME_PDF, out); 
+			
 			Configuration config = new Configuration(); 
 			config.setXIncludeAware(true);
 			Transformer transformer = new TransformerFactoryImpl(config)

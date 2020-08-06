@@ -24,6 +24,7 @@ public class TagTransform extends DBTransformer {
 	 * @param resultPath file path to the resulting docbook
 	 * @param frame file path to a dir holding the necessary frames used in tag replacement 
 	 * @param doc file path to the dir holding the original docbook XSLs 
+	 * @param saveArg boolean that determines whether we save the files we generate at src-gen/data
 	 */
 	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String doc, boolean saveArg) {
 		super(inputPath, stylePath, resultPath);
@@ -124,15 +125,10 @@ public class TagTransform extends DBTransformer {
 	private void createExtension(String type, String srcGen, String dataPath, HashMap<String, String> params) {
 		// Add the dataPath param which points to src-gen/data
 		params.put("dataPath", dataPath);
-		String hold; 
-		//Convert pdf to fo if necessary 
-		if (type.equals("pdf")) {
-			hold = "fo";
-		} else {
-			hold = type; 
-		}
+		// Convert the type from pdf -> fo if necessary 
+		String originalType = type.equals("pdf") ? "fo" : type; 
 		// Add the originalPath param which points to the original XSL that is being extending 
-		File xsl = getFile(docPath + File.separator + hold + File.separator + "docbook.xsl");
+		File xsl = getFile(docPath + File.separator + originalType + File.separator + "docbook.xsl");
 		String originalPath = xsl.toURI().toString();
 		params.put("originalPath", originalPath);
 		
@@ -153,6 +149,7 @@ public class TagTransform extends DBTransformer {
 			System.exit(1);
 		}
 		String targetPath = targetDir.getPath();
+		// In the style sheet dir, get the input file (type_base.xsl) and the XSL (type_trans.xsl)
 		File base = getFile(targetPath + File.separator + type + "_base.xsl");
 		File trans = getFile(targetPath + File.separator + type + "_trans.xsl");
 		
@@ -168,8 +165,7 @@ public class TagTransform extends DBTransformer {
 		
 		//Create output extension XSL and replace it if it exists prior
 		File ext = new File(outputDir + File.separator + type + "_ext.xsl");
-		if (ext.exists())
-		{
+		if (ext.exists()) {
 			ext.delete(); 
 		}
 		try {
@@ -191,8 +187,6 @@ public class TagTransform extends DBTransformer {
 		 */
 		File titleIn = getFile(targetPath + File.separator + "data_files" + File.separator + type + "_title.xsl");
 		File titleOut = new File(outputDir + File.separator + type + "_title.xsl");
-		//File titleIn = getFile(Thread.currentThread().getContextClassLoader().getResource("tag_transformations/fo/fo_data_files/fo_title.xsl").getFile());
-		//File titleOut = new File(tagGenPath + File.separator + "fo_title.xsl");
 		copy(titleIn, titleOut);
 	}
 	

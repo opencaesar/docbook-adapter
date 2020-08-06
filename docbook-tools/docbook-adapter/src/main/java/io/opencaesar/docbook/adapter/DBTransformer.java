@@ -101,9 +101,8 @@ abstract class DBTransformer{
 			config.setXIncludeAware(true);
 			Transformer transformer = new TransformerFactoryImpl(config)
 					.newTransformer(new StreamSource(style));
-			//Add parms to transformer
+			//Add params to transformer
 			params.forEach((key, value) -> {
-				LOGGER.info(key + ": " + value);
 				transformer.setParameter(key, value);
 			});
 			transformer.transform(new StreamSource(input), new StreamResult(res));
