@@ -3,15 +3,15 @@ A gradle interface to execute Docbook-Adapter.
 
 ## Run as a Gradle Task
 Add Docbook-Adapter to maven local. In the docbook-tools repo:      
-Linux/MacOS:
+#### Linux/MacOS:
 ```
 ./gradlew publishToMavenLocal
 ```
-Windows:
+#### Windows:
 ```
 gradlew.bat publishToMavenLocal
 ```
-Add to a gradle.build script: 
+#### Add to a gradle.build script: 
 ```
 buildscript {
 	repositories {
@@ -24,7 +24,7 @@ buildscript {
 	}
 }
 ```
-Task for tag replacement: 
+#### Task for tag replacement: 
 ```
 task docbookAdapterTag(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	input = file('path/to/input/docbook.xml')
@@ -34,7 +34,7 @@ task docbookAdapterTag(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	frame = file('path/to/frame')	
 }
 ```
-Task for pdf render: 
+#### Task for pdf render: 
 ```
 task docbookAdapterPDF(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	input = file('path/to/input/docbook.xml')
@@ -42,7 +42,7 @@ task docbookAdapterPDF(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	xsl = file('path/to/src-gen/pdf/pdf_ext.xsl')
 }
 ```
-Task for html render: 
+#### Task for html render: 
 ```
 task docbookAdapterHTML(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	input = file('path/to/input/docbook.xml')
