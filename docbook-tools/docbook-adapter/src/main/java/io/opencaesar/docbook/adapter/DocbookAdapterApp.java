@@ -9,11 +9,9 @@ import java.util.List;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.apache.log4j.xml.DOMConfigurator;
 
 import com.beust.jcommander.JCommander;
