@@ -2,6 +2,16 @@
 A gradle interface to execute Docbook-Adapter. 
 
 ## Run as a Gradle Task
+Add Docbook-Adapter to maven local. In the docbook-tools repo:      
+Linux/MacOS:
+```
+./gradlew publishToMavenLocal
+```
+Windows:
+```
+gradlew.bat publishToMavenLocal
+```
+Add to a gradle.build script: 
 ```
 buildscript {
 	repositories {
