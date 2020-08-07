@@ -26,7 +26,7 @@ subprojects {
     apply plugin: 'eclipse'
     
     apply from: "${rootDir}/gradle/source-layout.gradle"
-    //apply from: "${rootDir}/gradle/maven-deployment.gradle"
+    apply from: "${rootDir}/gradle/maven-deployment.gradle"
         
     configurations.all {
         exclude group: 'asm'

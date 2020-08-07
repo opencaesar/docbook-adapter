@@ -28,8 +28,8 @@ public class TagTransform extends DBTransformer {
 	 */
 	public TagTransform (String inputPath, String stylePath, String resultPath, String frame, String doc, boolean saveArg) {
 		super(inputPath, stylePath, resultPath);
-		if (frame == null) {
-			exitPrint("For tag transformation the -f parameter is required");
+		if (frame.equals("")) {
+			LOGGER.info("Warning! No path to frame directory was given. Can cause errors during tag replacement if a tag needing a frame was used."); 
 		}
 		if (doc == null) {
 			exitPrint("For tag transformation the -o parameter is required");

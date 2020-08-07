@@ -27,7 +27,7 @@ abstract class DBTransformer{
 	public abstract void apply(); 	
 	
 	public DBTransformer(String inputPath, String stylePath, String resultPath) {
-		LOGGER = LogManager.getLogger("DocBook Adapter");
+		LOGGER = LogManager.getLogger(DocbookAdapterApp.class);
 		input = getFile(inputPath); 
 		style = getFile(stylePath); 
 		//Double check if input and result are the same (error if they are)
