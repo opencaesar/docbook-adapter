@@ -53,15 +53,26 @@
             </tr>
         </thead>
         <!-- Create table rows by calling other templates -->
-        <xsl:for-each select="doc($framePath)//*[local-name() = 'result']">
-            <!-- If the result has a binding that matches to any of the column's target att -->
-            <xsl:if test="./*[@name = $tableTag/*[local-name() = 'column']/@target]">
-                <xsl:call-template name="generateRow">
-                    <xsl:with-param name="result" select="."/>
-                    <xsl:with-param name="tableTag" select="$tableTag"/>
-                </xsl:call-template>
-            </xsl:if>
-        </xsl:for-each>
+        <tbody>
+            <xsl:for-each select="doc($framePath)//*[local-name() = 'result']">
+                <!-- If the result has a binding that matches to any of the column's target att -->
+                <xsl:if test="./*[@name = $tableTag/*[local-name() = 'column']/@target]">
+                    <xsl:call-template name="generateRow">
+                        <xsl:with-param name="result" select="."/>
+                        <xsl:with-param name="tableTag" select="$tableTag"/>
+                    </xsl:call-template>
+                </xsl:if>
+            </xsl:for-each>
+            <!-- Create nested tables -->
+            <xsl:for-each select="./*[local-name() = 'nestedTable']">
+                <xsl:variable name="numCols" select="count($tableTag/*[local-name() = 'column'])"/>
+                <tr>
+                    <td colspan="{$numCols}">
+                        <xsl:call-template name="createTable"/>
+                    </td>
+                </tr>
+            </xsl:for-each>
+        </tbody>
     </xsl:template>
 
     <!-- Generate rows -->
