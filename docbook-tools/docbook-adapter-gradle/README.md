@@ -24,3 +24,19 @@ task docbookAdapterTag(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	frame = file('path/to/frame')	
 }
 ```
+Task for pdf render: 
+```
+task docbookAdapterPDF(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
+	input = file('path/to/input/docbook.xml')
+	type = 'pdf'
+	xsl = file('path/to/src-gen/pdf/pdf_ext.xsl')
+}
+```
+Task for html render: 
+```
+task docbookAdapterHTML(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
+	input = file('path/to/input/docbook.xml')
+	type = 'html'
+	xsl = file('path/to/src-gen/html/html_ext.xsl')
+}
+```
