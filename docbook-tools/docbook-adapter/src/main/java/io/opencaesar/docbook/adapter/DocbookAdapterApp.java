@@ -65,10 +65,17 @@ public class DocbookAdapterApp {
 	private String framePath = "";
 	
 	@Parameter(
+			names = { "--css", "-c" },
+			description = "Path to a CSS file to be used for html rendering. A default one is given in stylesheets-gen/default.css (Optional; only affects HTML)",
+			required = false,
+			order = 5)
+	private String cssPath = "";
+	
+	@Parameter(
 		names = { "--save", "-s" },
 		description = "Save the data. Will overwrite data in src-gen/data (optional)",
 		required = false,
-		order = 6)
+		order = 8)
 	public boolean save = false;
 
 	@Parameter(
@@ -185,7 +192,7 @@ public class DocbookAdapterApp {
 			case "pdf":
 				return new PDFTransform(inputPath, xslPath, result + ".pdf");
 			case "html":
-				return new HTMLTransform(inputPath, xslPath, result + ".html");
+				return new HTMLTransform(inputPath, xslPath, result + ".html", cssPath);
 			default: 
 				LOGGER.error(type + " is not a supported type. Please choose tag, pdf, or html");
 				return null;

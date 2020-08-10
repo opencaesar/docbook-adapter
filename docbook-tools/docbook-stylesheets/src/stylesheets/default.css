@@ -1,0 +1,14 @@
+ /* Set border collapse for all tables */
+table {
+    border-collapse: collapse;
+}
+
+/* Styling for the header for tables created in the inlineTable tag
+ * Set the background color to a light green
+ */
+tr.inlineHeader {
+    background-color: #BFDFBF;
+}
+
+/* Class:
+ * table.getTable */

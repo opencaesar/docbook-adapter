@@ -14,9 +14,10 @@ import org.apache.xalan.processor.TransformerFactoryImpl;
  * Used for HTML. Applies the appropriate XSL to get HTML format
  */
 public class HTMLTransform extends DBTransformer {
-	
-	public HTMLTransform (String inputPath, String stylePath, String resultPath) {
+	String css;
+	public HTMLTransform (String inputPath, String stylePath, String resultPath, String cssPath) {
 		super(inputPath, stylePath, resultPath);
+		css = cssPath;
 	}
 
 	@Override
@@ -31,6 +32,7 @@ public class HTMLTransform extends DBTransformer {
 		try {
 			Transformer transformer = new TransformerFactoryImpl()
 					.newTransformer(new StreamSource(style));
+			transformer.setParameter("html.stylesheet", css);
 			transformer.transform(new StreamSource(input), new StreamResult(res.toURI().getPath()));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");

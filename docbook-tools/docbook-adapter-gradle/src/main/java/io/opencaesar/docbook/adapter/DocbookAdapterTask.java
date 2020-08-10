@@ -12,6 +12,7 @@ public class DocbookAdapterTask extends DefaultTask {
 	public String xsl; 
 	public String original; 
 	public String frame; 
+	public String css; 
 	public boolean save; 
 	public boolean debug;
 	// Holds the args that will be passed to the main program 
@@ -24,6 +25,7 @@ public class DocbookAdapterTask extends DefaultTask {
 		addStringArg(xsl, "-x");
 		addStringArg(original, "-o");
 		addStringArg(frame, "-f");
+		addStringArg(css, "-c");
 		if (save) {
 			args.add("-s");
 		}
