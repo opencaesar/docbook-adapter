@@ -48,5 +48,6 @@ task docbookAdapterHTML(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 	input = file('path/to/input/docbook.xml')
 	type = 'html'
 	xsl = file('path/to/src-gen/html/html_ext.xsl')
+	css = file('path/to/stylesheet-gen/default.css')
 }
 ```
