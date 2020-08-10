@@ -116,7 +116,7 @@
             <tr class="inlineHeader" style="{$htmlColor}">
                 <xsl:processing-instruction name="dbfo">
                         bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
-                <td colspan="{$numCols}"><xsl:value-of select="@title"/></td>
+                <th colspan="{$numCols}"><xsl:value-of select="@title"/></th>
             </tr>
         </xsl:if>
         <tr class="inlineHeader" style="{$htmlColor}">
