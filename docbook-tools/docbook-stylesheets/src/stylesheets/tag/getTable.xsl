@@ -63,6 +63,7 @@
             </tr>
         </thead>
         <!-- Create table rows by calling other templates -->
+        <xsl:variable name="numCols" select="count($tableTag/*[local-name() = 'column'])"/>
         <tbody>
             <xsl:call-template name="generateRow">
                 <xsl:with-param name="framePath" select="$framePath"/>
@@ -72,7 +73,6 @@
             <xsl:for-each select="./*">
                 <!-- Nested table -->
                 <xsl:if test="local-name() = 'nestedTable'">
-                    <xsl:variable name="numCols" select="count($tableTag/*[local-name() = 'column'])"/>
                     <tr>
                         <td colspan="{$numCols}">
                             <xsl:call-template name="createTable"/>
@@ -83,6 +83,7 @@
                 <xsl:if test="local-name() = 'inlineTable'">
                     <xsl:call-template name="inlineTable">
                         <xsl:with-param name="frame" select="$frame"/>
+                        <xsl:with-param name="numCols" select="$numCols"/>
                     </xsl:call-template>
                 </xsl:if>
             </xsl:for-each>
@@ -92,6 +93,7 @@
     <!-- Creates an inline table (which is essentially a bunch of tr elements) -->
     <xsl:template name="inlineTable">
         <xsl:param name="frame"/>
+        <xsl:param name="numCols"/>
         <!-- If color is given; use it. Otherwise, use default green -->
         <xsl:variable name="pdfColor">
             <xsl:choose>
@@ -109,6 +111,14 @@
                 <xsl:otherwise></xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
+        <!-- Create title if given -->
+        <xsl:if test="@title">
+            <tr class="inlineHeader" style="{$htmlColor}">
+                <xsl:processing-instruction name="dbfo">
+                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
+                <td colspan="{$numCols}"><xsl:value-of select="@title"/></td>
+            </tr>
+        </xsl:if>
         <tr class="inlineHeader" style="{$htmlColor}">
             <!-- Use a processing instruction for the pdf format --> 
             <xsl:processing-instruction name="dbfo">
