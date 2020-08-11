@@ -35,6 +35,9 @@
         <xsl:variable name="includeDate" select="not(@hideDate = 'true')" as="xs:boolean"/>
         <xsl:variable name="includeCommit" select="@showCommitId = 'true'" as ="xs:boolean"/>
         <xsl:variable name="includeVersion" select="not(@hideVersion = 'true')" as="xs:boolean"/>
+        <xsl:variable name="includeEditor" select="@showEditor = 'true'" as="xs:boolean"/>
+        <!-- Create a getTable tag and pass it to the template -->
+        
         <informaltable border="1" class="changeLog">
             <!-- Create table headers based on tag attributes --> 
             <thead>
@@ -43,12 +46,17 @@
                     <xsl:if test="$includeDate">
                         <th>Date</th>
                     </xsl:if>
-                    <!-- Commit message/ Change summary -->
-                    <th>Change Summary</th>
-                    <!-- Files edited --> 
+                    <!-- Commit ID -->
                     <xsl:if test="$includeCommit">
                         <th>Commit Id</th>
                     </xsl:if>
+                    <!-- Tag message/ Change summary -->
+                    <th>Change Summary</th>
+                    <!-- Editor / Person who made the tag -->
+                    <xsl:if test="$includeEditor">
+                        <th>Editor</th>
+                    </xsl:if>
+                    <!-- Version --> 
                     <xsl:if test="$includeVersion">
                         <th>Tag Version</th>
                     </xsl:if>
@@ -56,63 +64,46 @@
             </thead>
             <tbody>
                 <!-- For each commit, make a table row -->
-                <xsl:for-each select="distinct-values(document($framePath)/*/*/*[local-name() = 'result']/*[1]/*[1])">
+                <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
                     <!-- Go up to the result node level to get commit ID associated with the label -->
-                    <xsl:variable name="tagID" select="."/>
                     <tr>
                         <!-- Get the date data if date attribute is included --> 
-                        <xsl:if test="$includeDate">
-                            <xsl:call-template name="getData">
-                                <xsl:with-param name="framePath" select="$framePath"/>
-                                <xsl:with-param name="id" select="$tagID"/>
-                                <xsl:with-param name="target" select="'tagDate'"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <!-- Get the commit message --> 
                         <xsl:call-template name="getData">
-                            <xsl:with-param name="framePath" select="$framePath"/>
-                            <xsl:with-param name="id" select="$tagID"/>
-                            <xsl:with-param name="target" select="'tagMessage'"/>
+                            <xsl:with-param name="condition" select="$includeDate"/>
+                            <xsl:with-param name="target" select="'date'"/>
                         </xsl:call-template>
                         <!-- Get the associated commit if chosen -->
-                        <xsl:if test="$includeCommit">
-                            <xsl:call-template name="getData">
-                                <xsl:with-param name="framePath" select="$framePath"/>
-                                <xsl:with-param name="id" select="$tagID"/>
-                                <xsl:with-param name="target" select="'hasTaggedCommit'"/>
-                            </xsl:call-template>
-                        </xsl:if>
+                        <xsl:call-template name="getData">
+                            <xsl:with-param name="condition" select="$includeCommit"/>
+                            <xsl:with-param name="target" select="'commit'"/>
+                        </xsl:call-template>
+                        <!-- Get the commit message --> 
+                        <xsl:call-template name="getData">
+                            <xsl:with-param name="condition" select="true()"/>
+                            <xsl:with-param name="target" select="'message'"/>
+                        </xsl:call-template>
+                        <!-- Get the person who created teh tag -->
+                        <xsl:call-template name="getData">
+                            <xsl:with-param name="condition" select="$includeEditor"/>
+                            <xsl:with-param name="target" select="'editor'"/>
+                        </xsl:call-template>
                         <!-- Get the tag version --> 
-                        <xsl:if test="$includeVersion">
-                            <xsl:call-template name="getData">
-                                <xsl:with-param name="framePath" select="$framePath"/>
-                                <xsl:with-param name="id" select="$tagID"/>
-                                <xsl:with-param name="target" select="'tagVersion'"/>
-                            </xsl:call-template>
-                        </xsl:if>
+                        <xsl:call-template name="getData">
+                            <xsl:with-param name="condition" select="$includeVersion"/>
+                            <xsl:with-param name="target" select="'version'"/>
+                        </xsl:call-template>
                     </tr>
                 </xsl:for-each>
             </tbody>
         </informaltable>
     </xsl:template>
     
-    <!-- Given the target predicate (target) for a specific subject (commitID),
-         create a td with the object in the s p o triple relation 
-         Assumes the target is in the issues namespace -->
+    <!-- If the condition is true, grab the target's value from the result -->
     <xsl:template name="getData">
-        <xsl:param name="framePath"/> 
-        <xsl:param name="id"/>
+        <xsl:param name="condition"/> 
         <xsl:param name="target"/>
-        <!-- First go from root to result (3 levels lower than root)-->
-        <!-- Check if the result has a correct commit ID via descedant -->
-        <!-- Check if the result has the target via descedant -->
-        <!-- Return the object value by going to the last binding (object binding) and getting its value -->
-        <td>
-            <xsl:value-of select="data(document($framePath)/*/*/*
-                [local-name() = 'result' and
-                descendant::*[local-name() = 'uri' and . = $id] and 
-                descendant::*[local-name() = 'uri' and . = concat($issueNS, $target)]]
-                /*[last()]/*)" separator=", "/>
-        </td>
+        <xsl:if test="$condition">
+            <td><xsl:value-of select="normalize-space(./*[@name = $target])"/></td>
+        </xsl:if>
     </xsl:template>
 </xsl:stylesheet>

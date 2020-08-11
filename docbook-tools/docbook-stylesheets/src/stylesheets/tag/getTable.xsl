@@ -175,7 +175,8 @@
     <xsl:template name="generateRow">
         <xsl:param name="framePath"/>
         <xsl:param name="tableTag"/>
-        <xsl:for-each select="document($framePath)//*[local-name() = 'result']">
+        <!-- Organize rows based on the first column's value -->
+        <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
             <!-- If the result has a binding that matches to any of the column's target att -->
             <xsl:variable name="result" select="."/>
             <xsl:if test="$result/*[@name = $tableTag/*[local-name() = 'column']/@target]">
