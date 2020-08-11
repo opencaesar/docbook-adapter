@@ -1,4 +1,13 @@
- /* Set border collapse for all tables */
+/* Class:
+ * table.getTable: Table created by getTable tag
+ * tr.inLineHeader: Header row created by inlineTable tag 
+ * table.changeLog: Table created by changeLog tag 
+ * tr.getTableHeader: Header row created by getTable
+ * tr.addHeader: Additional header row created by the addHeader child tag*/
+ 
+/* --------------------------------------------------------------------- */
+
+/* Set border collapse for all tables */
 table {
     border-collapse: collapse;
 }
@@ -10,5 +19,6 @@ tr.inlineHeader {
     background-color: #BFDFBF;
 }
 
-/* Class:
- * table.getTable */
+tr.addHeader {
+    background-color: #80bfff;
+}

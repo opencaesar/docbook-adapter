@@ -37,34 +37,21 @@
         </xsl:variable>
         <!-- Create table headers -->
         <thead>
-            <!-- If color is given; use it. Otherwise, use default green -->
-            <xsl:variable name="pdfColor">
-                <xsl:choose>
-                    <xsl:when test="@headerColor">
-                        <xsl:value-of select="@headerColor"/>
-                    </xsl:when>
-                    <xsl:otherwise></xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            <!-- If color is given; use it. Otherwise, default to the css --> 
-            <xsl:variable name="htmlColor">
-                <xsl:choose>
-                    <xsl:when test="@headerColor">background-color:<xsl:value-of select="@headerColor"/>
-                    </xsl:when>
-                    <xsl:otherwise></xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            <tr style="{$htmlColor}">
-                <xsl:processing-instruction name="dbfo">
-                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
-                <xsl:call-template name="generateHeader">
-                    <xsl:with-param name="tableTag" select="."/>
-                </xsl:call-template>
-            </tr>
+            <xsl:call-template name="generateHeader">
+                <xsl:with-param name="class" select="'getTableHeader'"/>
+                <xsl:with-param name="altColor" select="''"/>
+            </xsl:call-template>
         </thead>
         <!-- Create table rows by calling other templates -->
         <xsl:variable name="numCols" select="count($tableTag/*[local-name() = 'column'])"/>
         <tbody>
+            <!-- Check for additional headers --> 
+            <xsl:for-each select="./*[local-name() = 'addHeader']">
+                <xsl:call-template name="generateHeader">
+                    <xsl:with-param name="class" select="'addHeader'"/>
+                    <xsl:with-param name="altColor" select="'#80bfff'"/>
+                </xsl:call-template>
+            </xsl:for-each>
             <xsl:call-template name="generateRow">
                 <xsl:with-param name="framePath" select="$framePath"/>
                 <xsl:with-param name="tableTag" select="$tableTag"/>
@@ -113,20 +100,16 @@
         </xsl:variable>
         <!-- Create title if given -->
         <xsl:if test="@title">
-            <tr class="inlineHeader" style="{$htmlColor}">
+            <tr class="inlineTitle" style="{$htmlColor}">
                 <xsl:processing-instruction name="dbfo">
                         bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
                 <th colspan="{$numCols}"><xsl:value-of select="@title"/></th>
             </tr>
         </xsl:if>
-        <tr class="inlineHeader" style="{$htmlColor}">
-            <!-- Use a processing instruction for the pdf format --> 
-            <xsl:processing-instruction name="dbfo">
-                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
-            <xsl:call-template name="generateHeader">
-                <xsl:with-param name="tableTag" select="."/>
-            </xsl:call-template>
-        </tr>
+        <xsl:call-template name="generateHeader">
+            <xsl:with-param name="class" select="'inlineHeader'"/>
+            <xsl:with-param name="altColor" select="'#BFDFBF'"/>
+        </xsl:call-template>
         <xsl:variable name="inlinePath">
             <xsl:value-of select="$frame"/>
             <xsl:value-of select="@frame"/>
@@ -143,25 +126,49 @@
         </xsl:for-each>
     </xsl:template>
     
-    <!-- Creates th elements with the appropriate data for the headers 
-         wrap these elements appropriately (such as with tr)-->
+    <!-- Creates th elements with the appropriate data for the headers and
+         wraps these elements appropriately-->
     <xsl:template name="generateHeader">
-        <xsl:param name="tableTag"/>
-        <xsl:for-each select="$tableTag/*[local-name() = 'column']">
-            <!-- Create the header elements -->
-            <th>
-                <!-- (Choose @name if given, otherewise @target) -->
-                <xsl:choose>
-                    <xsl:when test="@name">
-                        <xsl:value-of select="@name"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="@target"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </th>
-        </xsl:for-each>
-    </xsl:template>    
+        <xsl:param name="class"/>
+        <xsl:param name="altColor"/>
+        <!-- If color is given; use it. Otherwise, use the given altColor -->
+        <xsl:variable name="pdfColor">
+            <xsl:choose>
+                <xsl:when test="@headerColor">
+                    <xsl:value-of select="@headerColor"/>
+                </xsl:when>
+                <xsl:otherwise><xsl:value-of select="$altColor"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- If color is given; use it. Otherwise, default to the css --> 
+        <xsl:variable name="htmlColor">
+            <xsl:choose>
+                <xsl:when test="@headerColor">background-color:<xsl:value-of select="@headerColor"/>
+                </xsl:when>
+                <xsl:otherwise></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- Apply the style to the tr -->
+        <tr class="{$class}" style="{$htmlColor}">
+            <!-- Use a processing instruction for the pdf format --> 
+            <xsl:processing-instruction name="dbfo">
+                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
+            <xsl:for-each select="./*[local-name() = 'column']">
+                <!-- Create the header elements -->
+                <th>
+                    <!-- (Choose @name if given, otherewise @target) -->
+                    <xsl:choose>
+                        <xsl:when test="@name">
+                            <xsl:value-of select="@name"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="@target"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </th>
+            </xsl:for-each>
+        </tr>
+    </xsl:template>
 
     <!-- Creates tr elements with the appropriate data for the table body 
          wrap these elements if needed (such as with tbody)-->
