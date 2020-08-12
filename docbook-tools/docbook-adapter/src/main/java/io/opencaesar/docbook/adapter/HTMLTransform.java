@@ -15,6 +15,7 @@ import org.apache.xalan.processor.TransformerFactoryImpl;
  */
 public class HTMLTransform extends DBTransformer {
 	String css;
+	
 	public HTMLTransform (String inputPath, String stylePath, String resultPath, String cssPath) {
 		super(inputPath, stylePath, resultPath);
 		css = cssPath;
@@ -32,7 +33,17 @@ public class HTMLTransform extends DBTransformer {
 		try {
 			Transformer transformer = new TransformerFactoryImpl()
 					.newTransformer(new StreamSource(style));
-			transformer.setParameter("html.stylesheet", css);
+			// Get absolute path due to relative pathing issues
+			// If file doesn't exist, don't use a style sheet
+			String cssPath = ""; 
+			File cssFile = new File(css); 
+			if (cssFile.exists()) {
+				cssPath = cssFile.getAbsolutePath();
+				transformer.setParameter("html.stylesheet", cssPath);
+			} else {
+				LOGGER.info("CSS File was not found at: " + css);
+				LOGGER.info("No CSS will be used");
+			}
 			transformer.transform(new StreamSource(input), new StreamResult(res.toURI().getPath()));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
