@@ -156,15 +156,18 @@
             <xsl:for-each select="./*[local-name() = 'column']">
                 <!-- Create the header elements -->
                 <th>
-                    <!-- (Choose @name if given, otherewise @target) -->
-                    <xsl:choose>
-                        <xsl:when test="@name">
-                            <xsl:value-of select="@name"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="@target"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <!-- Wrap in emphasis to create bold text --> 
+                    <emphasis role="bold">
+                        <!-- (Choose @name if given, otherewise @target) -->
+                        <xsl:choose>
+                            <xsl:when test="@name">
+                                <xsl:value-of select="@name"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="@target"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </emphasis>
                 </th>
             </xsl:for-each>
         </tr>
