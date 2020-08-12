@@ -50,6 +50,7 @@
             <xsl:value-of select="$type"/><xsl:text>.content</xsl:text>
         </xsl:variable>
         <xsl:if test="doc-available($filePath)">
+            <xsl:variable name="content" select="document($filePath)"/>
             <axsl:template name="{$contentType}">
                 <axsl:param name="pageclass" select="''"/>
                 <axsl:param name="sequence" select="''"/>
@@ -60,18 +61,18 @@
                         <!-- If the header has set a left header, make the appropriate blocks -->
                         <xsl:call-template name="generateContent">
                             <xsl:with-param name="position" select="'left'"/>
-                            <xsl:with-param name="filePath" select="$filePath"/>
+                            <xsl:with-param name="content" select="$content"/>
                         </xsl:call-template>
                         <!-- Now check center -->
                         <xsl:call-template name="generateContent">
                             <xsl:with-param name="position" select="'center'"/>
-                            <xsl:with-param name="filePath" select="$filePath"/>
+                            <xsl:with-param name="content" select="$content"/>
                         </xsl:call-template>
                         <!-- Now check right -->
                         <axsl:when test="$position = 'right'">
                             <xsl:call-template name="contentHelper">
                                 <xsl:with-param name="position" select="'right'"/>
-                                <xsl:with-param name="filePath" select="$filePath"/>
+                                <xsl:with-param name="content" select="$content"/>
                             </xsl:call-template>
                             <xsl:if test="$type = 'footer'">
                                 <fo:block>
@@ -88,24 +89,22 @@
     <!-- Helper function for making the header/footer rows -->
     <xsl:template name="generateContent">
         <xsl:param name="position"/>
-        <xsl:param name="filePath"/>
-        <xsl:if test="document($filePath)//*[local-name() = $position]">
-            <axsl:when test="$position = '{$position}'">
-                <xsl:call-template name="contentHelper">
-                    <xsl:with-param name="position" select="$position"/>
-                    <xsl:with-param name="filePath" select="$filePath"/>
-                </xsl:call-template>
-            </axsl:when>
-        </xsl:if>
+        <xsl:param name="content"/>
+        <axsl:when test="$position = '{$position}'">
+            <xsl:call-template name="contentHelper">
+                <xsl:with-param name="position" select="$position"/>
+                <xsl:with-param name="content" select="$content"/>
+            </xsl:call-template>
+        </axsl:when>
     </xsl:template>
     
     <!-- Helper function that creates the content for header/footer rows -->
     <xsl:template name="contentHelper">
         <xsl:param name="position"/>
-        <xsl:param name="filePath"/>
-        <xsl:for-each select="document($filePath)//*[local-name() = $position]/*[local-name() = 'child']">
+        <xsl:param name="content"/>
+        <xsl:for-each select="$content//*[local-name() = 'child']">
             <fo:block>
-                <xsl:value-of select="."/>
+                <xsl:value-of select="./*[local-name() = $position]"/>
             </fo:block>
         </xsl:for-each>
     </xsl:template>

@@ -44,28 +44,44 @@
         <xsl:variable name="filePath">
             <xsl:value-of select="$data"/><xsl:value-of select="$fileName"/>
         </xsl:variable>
+        <!-- Template name written into the html_ext.xsl file.
+             Template name is: user.{header/foot}.content-->
         <xsl:variable name="templateName">
             <xsl:text>user.</xsl:text><xsl:value-of select="$type"/><xsl:text>.content</xsl:text>
         </xsl:variable>
-        <axsl:template name="{$templateName}">
-            <HR/>
-            <p>
-                <xsl:call-template name="generateContent">
-                    <xsl:with-param name="position" select="'left'"/>
-                    <xsl:with-param name="filePath" select="$filePath"/>
-                </xsl:call-template>
-            </p>
-            <HR/>
-        </axsl:template>
+        <!-- Only create template if the file is available -->
+        <xsl:if test="doc-available($filePath)">
+            <axsl:template name="{$templateName}">
+                <HR/>
+                <table style="width: 100%">
+                    <xsl:for-each select="document($filePath)//*[local-name() = 'child']">
+                        <tr>
+                            <!-- Left header content -->
+                            <xsl:call-template name="generateContent">
+                                <xsl:with-param name="position" select="'left'"/>
+                            </xsl:call-template>
+                            <!-- Center header content -->
+                            <xsl:call-template name="generateContent">
+                                <xsl:with-param name="position" select="'center'"/>
+                            </xsl:call-template>
+                            <!-- Right header content -->
+                            <xsl:call-template name="generateContent">
+                                <xsl:with-param name="position" select="'right'"/>
+                            </xsl:call-template>
+                        </tr>
+                    </xsl:for-each>
+                </table>
+                <HR/>
+            </axsl:template>
+        </xsl:if>
     </xsl:template>
     
     <!-- Function that creates the content --> 
     <xsl:template name="generateContent">
         <xsl:param name="position"/>
-        <xsl:param name="filePath"/>
-        <xsl:for-each select="document($filePath)//*[local-name() = 'child']">
-            <xsl:value-of select="."/><br/>
-        </xsl:for-each>
+        <td style="float:{$position}">
+            <xsl:value-of select="./*[local-name() = $position]"/>
+        </td>
     </xsl:template>
 </xsl:stylesheet>
 
