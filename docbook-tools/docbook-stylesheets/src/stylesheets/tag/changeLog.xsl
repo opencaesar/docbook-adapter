@@ -38,7 +38,7 @@
         <xsl:variable name="includeEditor" select="@showEditor = 'true'" as="xs:boolean"/>
         <!-- Create a getTable tag and pass it to the template -->
         
-        <informaltable border="1" class="changeLog">
+        <informaltable class="changeLog" frame="none">
             <!-- Create table headers based on tag attributes --> 
             <thead>
                 <tr>

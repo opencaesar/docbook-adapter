@@ -9,7 +9,7 @@
         <!-- Title is optional; Use table for title and informalTable otherwise -->
         <xsl:choose>
             <xsl:when test="@title">
-                <table border="1" class="getTable">
+                <table class="getTable" border="0">
                     <caption>
                         <xsl:value-of select="@title"/>
                     </caption>
@@ -17,7 +17,7 @@
                 </table>
             </xsl:when>
             <xsl:otherwise>
-                <informaltable border="1" class="getTable">
+                <informaltable class="getTable" border="0">
                     <xsl:call-template name="tableBody"/>
                 </informaltable>
             </xsl:otherwise>
@@ -103,7 +103,9 @@
             <tr class="inlineTitle" style="{$htmlColor}">
                 <xsl:processing-instruction name="dbfo">
                         bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
-                <th colspan="{$numCols}"><xsl:value-of select="@title"/></th>
+                <th colspan="{$numCols}">
+                    <emphasis role="bold"><xsl:value-of select="@title"/></emphasis>
+                </th>
             </tr>
         </xsl:if>
         <xsl:call-template name="generateHeader">
