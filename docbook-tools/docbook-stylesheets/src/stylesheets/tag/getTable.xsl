@@ -122,6 +122,7 @@
         <xsl:for-each select="./*[local-name() = 'inlineTable']">
             <xsl:call-template name="inlineTable">
                 <xsl:with-param name="frame" select="$frame"/>
+                <xsl:with-param name="numCols" select="$numCols"/>
             </xsl:call-template>
         </xsl:for-each>
     </xsl:template>

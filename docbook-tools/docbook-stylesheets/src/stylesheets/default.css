@@ -19,6 +19,10 @@ tr.inlineHeader {
     background-color: #BFDFBF;
 }
 
+tr.inlineTitle {
+    background-color: #BFDFBF;
+}
+
 tr.addHeader {
     background-color: #80BFFF;
 }
