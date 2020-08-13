@@ -15,6 +15,10 @@ gradlew.bat publishToMavenLocal
 ## Downloading the files from MavenLocal in a gradle buildscript
 Add to a build.gradle file 
 ```
+repositories {
+   mavenLocal()
+}
+
 configurations { 
 	stylesheets 
 }
