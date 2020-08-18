@@ -12,9 +12,11 @@ task stylesheetZip(type: Zip) {
 }
 
 publishing {
-  publications {
-    maven(MavenPublication) {
-      artifact stylesheetZip
-    }
-  }
+	publications {
+		maven(MavenPublication) {
+      		artifact stylesheetZip
+    	}
+  	}
 }
+
+build.dependsOn publishToMavenLocal
