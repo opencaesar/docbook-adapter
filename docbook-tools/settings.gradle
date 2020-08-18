@@ -1,0 +1,3 @@
+include 'docbook-adapter'
+include 'docbook-stylesheets'
+include 'docbook-adapter-gradle'

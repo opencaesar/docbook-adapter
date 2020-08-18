@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+}
+
+subprojects {
+    group = 'io.opencaesar.docbook'
+    version = '0.1.0'
+    
+    ext.versions = [
+        xtext: '2.16.0',
+        owl: '5.1.+',
+        xmlcatalog: '1.0.4'
+    ]
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+    
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    
+    apply from: "${rootDir}/gradle/source-layout.gradle"
+    apply from: "${rootDir}/gradle/maven-deployment.gradle"
+        
+    configurations.all {
+        exclude group: 'asm'
+    }
+
+    task createVersion {
+        doLast {
+            def version = project.version.toString()
+            def file = new File("$projectDir/src/main/resources/version.txt")
+            file.write(version)
+        }
+    }
+    
+    classes {
+        dependsOn createVersion
+    }
+}
