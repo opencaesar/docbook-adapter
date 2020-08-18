@@ -10,37 +10,18 @@ applicationName = 'docbook-adapter'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-configurations { 
-	stylesheets 
-}
-
 dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
 	implementation "com.beust:jcommander:1.72"
 	implementation "log4j:log4j:1.2.17"
   	implementation 'org.slf4j:slf4j-nop:1.7.+'
-	implementation "com.github.galigator.openllet:openllet-owlapi:2.6.5"
-
-	// Our default stylesheets 
-  	stylesheets "io.opencaesar.docbook:docbook-stylesheets:+"
-  	//implementation "net.sf.docbook:docbook-xsl:1.79.1"
-
-  	// XSL and FOP processors 
+	implementation 'com.google.guava:guava:29.0-jre'
+	
+ 	 // XSL and FOP processors 
 	implementation "net.sf.saxon:Saxon-HE:9.9.+"
 	implementation "org.apache.xmlgraphics:fop:1.0"
 	implementation "xalan:xalan:2.7.1"
-  	
   	// Use JUnit test framework
-	testImplementation 'junit:junit:4.12'
+  	testImplementation 'junit:junit:4.12'
+  	//configurations.implementation.exclude group: 'org.antlr', module: 'antlr4-runtime'
 }
-
-// Zips stylesheets from docbook-stylesheets and places them in build/stylesheets-gen 
-task dependencyUnzip(type: Copy) {
-	doLast {
-		from configurations.stylesheets.files.collect { zipTree(it) }
-		into file("build/stylesheets-gen")
-	}
-}
-
-// Executes unzipping the files when build is ran 
-build.dependsOn dependencyUnzip
