@@ -19,4 +19,4 @@ publishing {
   	}
 }
 
-build.dependsOn publishToMavenLocal
+build.dependsOn stylesheetZip

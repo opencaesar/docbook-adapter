@@ -21,7 +21,7 @@ dependencies {
 	implementation "net.sf.saxon:Saxon-HE:9.9.+"
 	implementation "org.apache.xmlgraphics:fop:1.0"
 	implementation "xalan:xalan:2.7.1"
+	
   	// Use JUnit test framework
   	testImplementation 'junit:junit:4.12'
-  	//configurations.implementation.exclude group: 'org.antlr', module: 'antlr4-runtime'
 }
