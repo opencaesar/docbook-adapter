@@ -4,6 +4,12 @@
     xmlns='http://docbook.org/ns/docbook'
     exclude-result-prefixes="#all"
     version="2.0">
+    
+    
+    <!-- CURRENTLY NOT BEING USED; SAVED HERE FOR POTENTIAL FUTURE USE -->
+    <!-- FOR CHANGE LOG, LOOK AT THE CHANGELOG.XSL -->
+    
+    
     <!-- Creates a change log based off of commits --> 
     <!-- Variables holding the namespaces used in the issues vocab
              User with conncat to label specific things in the vocab --> 
