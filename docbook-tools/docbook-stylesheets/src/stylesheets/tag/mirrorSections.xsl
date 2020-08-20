@@ -5,12 +5,11 @@
     version="2.0">
     
     <xsl:template match="//*[local-name() = 'mirrorSection']" name="mirrorSection">
-        <xsl:param name="frame" tunnel="yes"/>
-        <xsl:variable name="framePath">
+        <xsl:param name="frameDir" tunnel="yes"/>
+        <xsl:variable name="frameFile">
             <!-- Frame param is the frame directory
                  @frame is the frame attribute with the tag -->
-            <xsl:value-of select="$frame"/>
-            <xsl:value-of select="@frame"/>
+            <xsl:value-of select="$frameDir"/><xsl:value-of select="@frame"/>
         </xsl:variable>
         
     </xsl:template>

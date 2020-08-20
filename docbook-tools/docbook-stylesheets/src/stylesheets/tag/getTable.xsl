@@ -183,22 +183,67 @@
         <xsl:param name="tableTag"/>
         <!-- Organize rows based on the first column's value -->
         <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
-            <!-- If the result has a binding that matches to any of the column's target att -->
             <xsl:variable name="result" select="."/>
+            <!-- If the result has a binding that matches to any of the column's target att -->
             <xsl:if test="$result/*[@name = $tableTag/*[local-name() = 'column']/@target]">
-                <tr>
-                    <xsl:for-each select="$tableTag/*[local-name() = 'column']">
-                        <xsl:variable name="target">
-                            <xsl:value-of select="@target"/>
+                <!-- Check if any of the columns has a filter that must be met -->
+                <xsl:choose>
+                    <!-- If there is a filter, ensure that the filter passes -->
+                    <xsl:when test="$tableTag/*[local-name() = 'filter']">
+                        <xsl:variable name="filterTarget" select="$tableTag/*[local-name() = 'filter'][last()]/@target"/>
+                        <xsl:variable name="filterVal" select="$tableTag/*[local-name() = 'filter'][last()]/@val"/>
+                        <xsl:variable name="testVal">
+                            <xsl:value-of select="normalize-space($result/*[@name = $filterTarget]/*)"/>
                         </xsl:variable>
-                        <td>
-                            <xsl:if test="$result/*[@name = $target]">
-                                <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
-                            </xsl:if>
-                        </td>
-                    </xsl:for-each>
-                </tr>
+                        <xsl:if test="$testVal = $filterVal">
+                            <xsl:call-template name="generateData">
+                                <xsl:with-param name="result" select="$result"/>
+                                <xsl:with-param name="tableTag" select="$tableTag"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <!-- No filter, so generate data -->
+                        <xsl:call-template name="generateData">
+                            <xsl:with-param name="result" select="$result"/>
+                            <xsl:with-param name="tableTag" select="$tableTag"/>
+                        </xsl:call-template>                        
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
+    
+    <xsl:template name="generateData">
+        <xsl:param name="tableTag"/>
+        <xsl:param name="result"/>
+        <tr>
+            <xsl:for-each select="$tableTag/*[local-name() = 'column']">
+                <xsl:variable name="target">
+                    <xsl:value-of select="@target"/>
+                </xsl:variable>
+                <td>
+                    <xsl:if test="$result/*[@name = $target]">
+                        <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
+                    </xsl:if>
+                </td>
+            </xsl:for-each>
+        </tr>
+    </xsl:template>
+    
+    
+    <!-- 
+        <tr>
+                        <xsl:for-each select="$tableTag/*[local-name() = 'column']">
+                            <xsl:variable name="target">
+                                <xsl:value-of select="@target"/>
+                            </xsl:variable>
+                            <td>
+                                <xsl:if test="$result/*[@name = $target]">
+                                    <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
+                                </xsl:if>
+                            </td>
+                        </xsl:for-each>
+                    </tr>
+                    -->
 </xsl:stylesheet>
