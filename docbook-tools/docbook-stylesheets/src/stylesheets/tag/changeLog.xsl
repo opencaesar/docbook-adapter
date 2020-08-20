@@ -15,9 +15,9 @@
     
     <!-- Create an article with a change log -->
     <xsl:template match="//*[local-name() = 'changeLog']">
-        <xsl:param name="frame" tunnel="yes"/>
+        <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:variable name="framePath"> 
-            <xsl:value-of select="$frame"/><xsl:value-of select="@frame"/>
+            <xsl:value-of select="$frameDir"/><xsl:value-of select="@frame"/>
         </xsl:variable>
         <article> 
             <title>Change Log</title>

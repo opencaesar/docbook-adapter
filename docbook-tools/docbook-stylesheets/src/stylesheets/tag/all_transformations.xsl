@@ -11,7 +11,7 @@
     <xsl:template match="@* | node()">
         <xsl:copy>
             <xsl:apply-templates select="@* | node()">
-                <xsl:with-param name="frame" select="$framePath" tunnel="yes"/>
+                <xsl:with-param name="frameDir" select="$framePath" tunnel="yes"/>
                 <xsl:with-param name="date" select="$currDate" tunnel="yes"/>
                 <xsl:with-param name="data" select="$dataPath" tunnel="yes"/>
             </xsl:apply-templates>

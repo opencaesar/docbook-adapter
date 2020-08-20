@@ -5,7 +5,7 @@
     exclude-result-prefixes="xs" version="2.0">
     <!-- Given a frame and columns, genereate a table -->
     <xsl:template match="//*[local-name() = 'getTable']" name="createTable">
-        <xsl:param name="frame" tunnel="yes"/>
+        <xsl:param name="frameDir" tunnel="yes"/>
         <!-- Title is optional; Use table for title and informalTable otherwise -->
         <xsl:choose>
             <xsl:when test="@title">
@@ -26,13 +26,13 @@
 
     <!-- Table body -->
     <xsl:template name="tableBody">
-        <xsl:param name="frame" tunnel="yes"/>
+        <xsl:param name="frameDir" tunnel="yes"/>
         <!-- Variable holding the entire tag. Used as we change nodes later -->
         <xsl:variable name="tableTag" select="."/>
         <xsl:variable name="framePath">
             <!-- Frame variable is the frame path
                  @frame is the frame attribute with the tag -->
-            <xsl:value-of select="$frame"/>
+            <xsl:value-of select="$frameDir"/>
             <xsl:value-of select="@frame"/>
         </xsl:variable>
         <!-- Create table headers -->
@@ -69,7 +69,7 @@
                 <!-- Inline table -->
                 <xsl:if test="local-name() = 'inlineTable'">
                     <xsl:call-template name="inlineTable">
-                        <xsl:with-param name="frame" select="$frame"/>
+                        <xsl:with-param name="frame" select="$frameDir"/>
                         <xsl:with-param name="numCols" select="$numCols"/>
                     </xsl:call-template>
                 </xsl:if>

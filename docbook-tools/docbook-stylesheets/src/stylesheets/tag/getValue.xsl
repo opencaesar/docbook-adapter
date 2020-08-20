@@ -8,9 +8,9 @@
     <!-- Using the given frame, retrieve the specified data -->
     <xsl:template match="//*[local-name() = 'getValue']">
         <!-- Get the directory holding the frames -->
-        <xsl:param name="frame" tunnel="yes"/>
+        <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:variable name="filePath">
-            <xsl:value-of select="$frame"/>
+            <xsl:value-of select="$frameDir"/>
             <xsl:value-of select="@frame"/>
         </xsl:variable>
         <!-- Extract from the tag the targeted variable values -->
