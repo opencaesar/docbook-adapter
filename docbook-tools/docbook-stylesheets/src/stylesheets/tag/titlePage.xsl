@@ -18,7 +18,7 @@
     </xsl:template>
 
     <!-- Preparer tag: Replace with a signature list -->
-    <xsl:template match="//*[local-name() = 'titlePage']/*[local-name() = 'preparer']">
+    <xsl:template match="descendant::*[local-name() = 'titlePage']/*[local-name() = 'preparer']">
         <simplelist type="vertical" columns="1">
             <member>Prepared by</member>
             <member/>
@@ -50,21 +50,21 @@
         to get the rendering to work properly -->
 
     <!-- Replace docID with the productname docbook tag -->
-    <xsl:template match="//*[local-name() = 'titlePage']/*[local-name() = 'docID']">
+    <xsl:template match="descendant::*[local-name() = 'titlePage']/*[local-name() = 'docID']">
         <productname>
             <xsl:value-of select="."/>
         </productname>
     </xsl:template>
 
     <!-- Replace releaseversion with the textobject docbook tag -->
-    <xsl:template match="//*[local-name() = 'titlePage']/*[local-name() = 'releaseversion']">
+    <xsl:template match="descendant::*[local-name() = 'titlePage']/*[local-name() = 'releaseversion']">
         <textobject>
             <xsl:value-of select="."/>
         </textobject>
     </xsl:template>
 
     <!-- Replace titleimage with a mediaobject docbook tag -->
-    <xsl:template match="//*[local-name() = 'titlePage']/*[local-name() = 'titleimage']">
+    <xsl:template match="descendant::*[local-name() = 'titlePage']/*[local-name() = 'titleimage']">
         <mediaobject>
             <imageobject>
                 <xsl:copy-of select="./*"/>
@@ -73,7 +73,7 @@
     </xsl:template>
 
     <!-- Replace bottomimage with a imageobject docbook tag -->
-    <xsl:template match="//*[local-name() = 'titlePage']/*[local-name() = 'bottomimage']">
+    <xsl:template match="descendant::*[local-name() = 'titlePage']/*[local-name() = 'bottomimage']">
         <imageobject>
             <xsl:copy-of select="./*"/>
         </imageobject>
