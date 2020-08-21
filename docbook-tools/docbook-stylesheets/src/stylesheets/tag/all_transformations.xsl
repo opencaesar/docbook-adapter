@@ -27,5 +27,6 @@
     <xsl:include href="currentDate.xsl"/>
     <xsl:include href="titlePage.xsl"/>
     <xsl:include href="changeLog.xsl"/>
+    <xsl:include href="mirrorSections.xsl"/>
 
 </xsl:stylesheet>

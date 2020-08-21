@@ -44,6 +44,7 @@ public class HTMLTransform extends DBTransformer {
 				LOGGER.info("CSS File was not found at: " + css);
 				LOGGER.info("No CSS will be used");
 			}
+			transformer.setParameter("section.autolabel", "1");
 			transformer.transform(new StreamSource(input), new StreamResult(res.toURI().getPath()));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");

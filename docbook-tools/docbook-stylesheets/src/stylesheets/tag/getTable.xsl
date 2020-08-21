@@ -230,20 +230,4 @@
             </xsl:for-each>
         </tr>
     </xsl:template>
-    
-    
-    <!-- 
-        <tr>
-                        <xsl:for-each select="$tableTag/*[local-name() = 'column']">
-                            <xsl:variable name="target">
-                                <xsl:value-of select="@target"/>
-                            </xsl:variable>
-                            <td>
-                                <xsl:if test="$result/*[@name = $target]">
-                                    <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
-                                </xsl:if>
-                            </td>
-                        </xsl:for-each>
-                    </tr>
-                    -->
 </xsl:stylesheet>

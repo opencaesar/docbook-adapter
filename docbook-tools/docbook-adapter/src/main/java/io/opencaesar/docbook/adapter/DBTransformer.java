@@ -105,6 +105,8 @@ abstract class DBTransformer{
 			params.forEach((key, value) -> {
 				transformer.setParameter(key, value);
 			});
+			transformer.setParameter("section.autolabel", "1");
+			transformer.setParameter("section.label.includes.component.label", "1");
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
