@@ -45,6 +45,10 @@
         <!-- Create table rows by calling other templates -->
         <xsl:variable name="numCols" select="count($tableTag/*[local-name() = 'column'])"/>
         <tbody>
+            <!-- Always add an empty row to avoid empty table error -->
+            <tr>
+                <td colspan="{$numCols}"/>
+            </tr>
             <!-- Check for additional headers --> 
             <xsl:for-each select="./*[local-name() = 'addHeader']">
                 <xsl:call-template name="generateHeader">
