@@ -128,7 +128,6 @@
                 <xsl:variable name="target">
                     <xsl:value-of select="$varMap/*[local-name() = 'entry' and @key = $checkVal]"/>
                 </xsl:variable>
-                <xsl:message select="$target"/>
                 <xsl:variable name="resultVal">
                     <xsl:value-of select="$result/*[@name = $target]/*"/>
                 </xsl:variable>

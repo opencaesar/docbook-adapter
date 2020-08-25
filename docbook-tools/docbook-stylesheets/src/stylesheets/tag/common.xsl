@@ -15,5 +15,21 @@
             <xsl:copy-of select="."/>
         </xsl:result-document>
     </xsl:template>
+    
+    <!-- Used to copy attributes that are not specific to the tag --> 
+    <!-- Allows users to add DocBook attributes to the underlying tags -->
+    <!-- Exclude list is expected to be formatted as: name1|name2|... -->
+    <xsl:template name="inheritAttributes">
+        <xsl:param name="excludeList"/>
+        <xsl:param name="target"/>
+        <xsl:message>s</xsl:message>
+        <xsl:message select="$target">Target</xsl:message>
+        <xsl:message select="@*"/>
+        <!-- Copy the attributes with vars replaced -->
+        <xsl:for-each select="$target/@*[not(matches(name(), $excludeList))]">
+            <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+            <xsl:message>En</xsl:message>
+        </xsl:for-each>
+    </xsl:template>
 
 </xsl:stylesheet>

@@ -39,6 +39,11 @@
         <!-- Create a getTable tag and pass it to the template -->
         
         <informaltable class="changeLog" frame="none">
+            <!-- Inherit attributes to table --> 
+            <xsl:call-template name="inheritAttributes">
+                <xsl:with-param name="excludeList" select="'hideDate|showCommitId|hideVersion|showEditor'"/>
+                <xsl:with-param name="target" select="."/>
+            </xsl:call-template>
             <!-- Create table headers based on tag attributes --> 
             <thead>
                 <tr>

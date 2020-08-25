@@ -10,6 +10,11 @@
         <xsl:choose>
             <xsl:when test="@title">
                 <table class="getTable" border="0">
+                    <!-- Inherit attributes to table --> 
+                    <xsl:call-template name="inheritAttributes">
+                        <xsl:with-param name="excludeList" select="'title|frame'"/>
+                        <xsl:with-param name="target" select="."/>
+                    </xsl:call-template>
                     <caption>
                         <xsl:value-of select="@title"/>
                     </caption>
@@ -18,6 +23,10 @@
             </xsl:when>
             <xsl:otherwise>
                 <informaltable class="getTable" border="0">
+                    <!-- Inherit attributes to table --> 
+                    <xsl:call-template name="inheritAttributes">
+                        <xsl:with-param name="excludeList" select="'title|frame'"/>
+                    </xsl:call-template>
                     <xsl:call-template name="tableBody"/>
                 </informaltable>
             </xsl:otherwise>
