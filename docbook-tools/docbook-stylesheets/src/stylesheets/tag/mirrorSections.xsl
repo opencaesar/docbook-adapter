@@ -15,11 +15,11 @@
         <!-- Make a map of vars and a varList entry --> 
         <!-- Variables are used by surrounding _varName_ -->
         <xsl:variable name="varMap">
-           <!-- First map varList -> _varName1_|_varName2_|.. -->
+           <!-- First map varList -> varName1|varName2|... -->
            <entry key="varList">
                <xsl:value-of select="./*[local-name() = 'var']/@name" separator="|"/>
            </entry>
-            <!-- For each var, map name -> target --> 
+            <!-- For each var, map [name -> target] --> 
             <xsl:for-each select="./*[local-name() = 'var']">
                 <entry key="{@name}"><xsl:value-of select="@target"/></entry>
             </xsl:for-each>
@@ -27,8 +27,6 @@
         <!-- Make a section for each result -->
         <xsl:for-each select="document($frameFile)/*/*/*[local-name() = 'result']">
             <xsl:variable name="res" select="."/>
-            <xsl:variable name="filterTarget" select="normalize-space(substring-before($sectionTag/@filter, '='))"/>
-            <xsl:variable name="filterVal" select="normalize-space(substring-after($sectionTag/@filter, '='))"/>
             <!-- Check filter condition --> 
             <xsl:if test="not($sectionTag/@filter) or oc:checkFilter($sectionTag/@filter, $res)">
                 <!-- Create a section with the title -->
@@ -59,14 +57,41 @@
         </xsl:for-each>
     </xsl:template>
     
-    <!-- Template for varText (only expected to be within a mirrorSection) --> 
-    <!-- Simply create a para holding the variable replaced message --> 
-    <xsl:template match="//*[local-name() = 'varText']">
-        <para><xsl:value-of select="@message"/></para>
-    </xsl:template>
-    
     <!-- Template for var: Simply ensures that var is not copied over to the output -->
     <xsl:template match="//*[local-name() = 'var']"/>
+    
+    <!-- Template for creating the elements with their attr values replaced with vars -->
+    <xsl:template name="elementMake">
+        <xsl:param name="res"/>
+        <xsl:param name="varMap"/>
+        <xsl:element name="{name()}">
+            <!-- Copy the attributes with vars replaced -->
+            <xsl:for-each select="attribute::*">
+                <xsl:variable name="attVal"><xsl:value-of select="."/></xsl:variable>
+                <xsl:attribute name="{name()}">
+                    <xsl:call-template name="multipleReplace">
+                        <xsl:with-param name="result" select="$res" tunnel="yes"/>
+                        <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
+                        <xsl:with-param name="val" select="$attVal"/>
+                    </xsl:call-template>
+                </xsl:attribute>
+            </xsl:for-each>
+            <!-- Copy the value of the element to our new element with vars replaced -->
+            <!-- <xsl:value-of select="."/> -->
+            <xsl:call-template name="multipleReplace">
+                <xsl:with-param name="result" select="$res" tunnel="yes"/>
+                <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
+                <xsl:with-param name="val" select="."/>
+            </xsl:call-template>
+            <!-- Copy and modify the element's children -->
+            <xsl:for-each select="./*">
+                <xsl:call-template name="elementMake">
+                    <xsl:with-param name="varMap" select="$varMap"/>
+                    <xsl:with-param name="res" select="$res"/>
+                </xsl:call-template>
+            </xsl:for-each>
+        </xsl:element>
+    </xsl:template>
     
     <!-- Does variable replacement for a given string. Analyzed by space separated strings -->
     <xsl:template name="multipleReplace">
@@ -87,34 +112,6 @@
             </xsl:for-each>
         </xsl:variable>
         <xsl:value-of select="$res"/>
-    </xsl:template>
-   
-   <!-- Template for creating the elements with their attr values replaced with vars -->
-    <xsl:template name="elementMake">
-        <xsl:param name="res"/>
-        <xsl:param name="varMap"/>
-        <xsl:element name="{name()}">
-            <!-- Copy the attributes with vars replaced -->
-            <xsl:for-each select="attribute::*">
-                <xsl:variable name="attVal"><xsl:value-of select="."/></xsl:variable>
-                <xsl:attribute name="{name()}">
-                    <xsl:call-template name="multipleReplace">
-                        <xsl:with-param name="result" select="$res" tunnel="yes"/>
-                        <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
-                        <xsl:with-param name="val" select="$attVal"/>
-                    </xsl:call-template>
-                </xsl:attribute>
-            </xsl:for-each>
-            <!-- Copy the value of the element to our new element -->
-            <xsl:value-of select="."/>
-            <!-- Copy and modify the element's children -->
-            <xsl:for-each select="./*">
-                <xsl:call-template name="elementMake">
-                    <xsl:with-param name="varMap" select="$varMap"/>
-                    <xsl:with-param name="res" select="$res"/>
-                </xsl:call-template>
-            </xsl:for-each>
-        </xsl:element>
     </xsl:template>
     
     <!-- Returns the static text if string isn't a part of the varList 
