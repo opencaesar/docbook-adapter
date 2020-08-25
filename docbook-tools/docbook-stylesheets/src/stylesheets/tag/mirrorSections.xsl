@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://docbook.org/ns/docbook"
+    xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     
     <xsl:template match="//*[local-name() = 'mirrorSection']" name="mirrorSection">
@@ -26,30 +27,35 @@
         <!-- Make a section for each result -->
         <xsl:for-each select="document($frameFile)/*/*/*[local-name() = 'result']">
             <xsl:variable name="res" select="."/>
-            <!-- Create a section with the title -->
-            <section>
-                <title>
-                    <xsl:call-template name="varReplace">
-                        <xsl:with-param name="val" select="$sectionTag/@title"/>
-                        <xsl:with-param name="result" select="."/>
-                        <xsl:with-param name="varMap" select="$varMap"/>
-                    </xsl:call-template>
-                </title> 
-                <xsl:for-each select="$sectionTag/*">
-                    <!-- For each child, check for _vars_ in each of the child's attributes -->
-                    <xsl:variable name="element">
-                        <xsl:call-template name="elementMake">
-                            <xsl:with-param name="res" select="$res"/>
+            <xsl:variable name="filterTarget" select="normalize-space(substring-before($sectionTag/@filter, '='))"/>
+            <xsl:variable name="filterVal" select="normalize-space(substring-after($sectionTag/@filter, '='))"/>
+            <!-- Check filter condition --> 
+            <xsl:if test="not($sectionTag/@filter) or oc:checkFilter($sectionTag/@filter, $res)">
+                <!-- Create a section with the title -->
+                <section>
+                    <title>
+                        <xsl:call-template name="varReplace">
+                            <xsl:with-param name="val" select="$sectionTag/@title"/>
+                            <xsl:with-param name="result" select="."/>
                             <xsl:with-param name="varMap" select="$varMap"/>
                         </xsl:call-template>
-                    </xsl:variable>
-                    <!-- Now that the vars are replaced, apply the appropriate template for the element -->
-                    <xsl:apply-templates select="$element">
-                        <xsl:with-param name="result" select="." tunnel="yes"/>
-                        <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
-                    </xsl:apply-templates>
-                </xsl:for-each>
-            </section>
+                    </title> 
+                    <xsl:for-each select="$sectionTag/*">
+                        <!-- For each child, check for _vars_ in each of the child's attributes -->
+                        <xsl:variable name="element">
+                            <xsl:call-template name="elementMake">
+                                <xsl:with-param name="res" select="$res"/>
+                                <xsl:with-param name="varMap" select="$varMap"/>
+                            </xsl:call-template>
+                        </xsl:variable>
+                        <!-- Now that the vars are replaced, apply the appropriate template for the element -->
+                        <xsl:apply-templates select="$element">
+                            <xsl:with-param name="result" select="." tunnel="yes"/>
+                            <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
+                        </xsl:apply-templates>
+                    </xsl:for-each>
+                </section>
+            </xsl:if>
         </xsl:for-each>
     </xsl:template>
     

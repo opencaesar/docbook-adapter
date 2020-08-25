@@ -2,6 +2,7 @@
 <!-- <getTable frame="query1.frame" title="Table" colList="component$mass"/> -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://docbook.org/ns/docbook"
+    xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     <!-- Given a frame and columns, genereate a table -->
     <xsl:template match="//*[local-name() = 'getTable']" name="createTable">
@@ -199,16 +200,11 @@
             <xsl:variable name="result" select="."/>
             <!-- If the result has a binding that matches to any of the column's target att -->
             <xsl:if test="$result/*[@name = $tableTag/*[local-name() = 'column']/@target]">
-                <!-- Check if any of the columns has a filter that must be met -->
+                <!-- Check for a filter -->
                 <xsl:choose>
-                    <!-- If there is a filter, ensure that the filter passes -->
-                    <xsl:when test="$tableTag/*[local-name() = 'filter']">
-                        <xsl:variable name="filterTarget" select="$tableTag/*[local-name() = 'filter'][last()]/@target"/>
-                        <xsl:variable name="filterVal" select="$tableTag/*[local-name() = 'filter'][last()]/@val"/>
-                        <xsl:variable name="testVal">
-                            <xsl:value-of select="normalize-space($result/*[@name = $filterTarget]/*)"/>
-                        </xsl:variable>
-                        <xsl:if test="$testVal = $filterVal">
+                    <xsl:when test="$tableTag/@filter">
+                        <!-- Function located in common.xsl -->
+                        <xsl:if test="oc:checkFilter($tableTag/@filter, $result)">
                             <xsl:call-template name="generateData">
                                 <xsl:with-param name="result" select="$result"/>
                                 <xsl:with-param name="tableTag" select="$tableTag"/>
