@@ -80,6 +80,13 @@ abstract class DBTransformer{
 		System.exit(1);
 	}
 	
+	// Adds params to the transformer that are common to both renders
+	public void addCommonParams(Transformer transformer) {
+		transformer.setParameter("section.autolabel", "1");
+		transformer.setParameter("section.label.includes.component.label", "1");
+		transformer.setParameter("chapter.autolabel", "0");
+	}
+	
 	/**
 	 * Creates an empty params and calls on applyWithParams, which does the work
 	 */
@@ -105,14 +112,13 @@ abstract class DBTransformer{
 			params.forEach((key, value) -> {
 				transformer.setParameter(key, value);
 			});
-			transformer.setParameter("section.autolabel", "1");
-			transformer.setParameter("section.label.includes.component.label", "1");
+			addCommonParams(transformer);
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
 	}
+	
 }
