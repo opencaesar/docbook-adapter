@@ -4,9 +4,10 @@
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     <!-- Using the given frame, retrieve the specified data -->
-    <xsl:template match="//*[local-name() = 'getValue']">
+    <xsl:template match="oc:value">
         <!-- Get the directory holding the frames -->
         <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:variable name="filePath">
@@ -24,7 +25,7 @@
             <xsl:value-of select="@equalsTo"/>
         </xsl:variable>
         <!-- Go through the results and search for the desired value -->
-        <xsl:for-each select="doc($filePath)//*[local-name() = 'result']">
+        <xsl:for-each select="document($filePath)/*/*/*[local-name() = 'result']">
             <xsl:if test="./*[@name = $where]/* = $equalsTo">
                 <xsl:value-of select="normalize-space(./*[@name = $of])"/>
             </xsl:if>

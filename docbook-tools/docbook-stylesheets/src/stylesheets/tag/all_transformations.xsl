@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:oc="https://opencaesar.github.io/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="2.0">
     <xsl:output indent="yes"/>
     <!-- Params -->
@@ -21,8 +22,8 @@
     <!-- Include XSL style sheets for performing tag replacements -->
     <xsl:include href="headerAndFooter.xsl"/>
     <xsl:include href="common.xsl"/>
-    <xsl:include href="getValue.xsl"/>
-    <xsl:include href="getTable.xsl"/>
+    <xsl:include href="value.xsl"/>
+    <xsl:include href="table.xsl"/>
     <xsl:include href="signature.xsl"/>
     <xsl:include href="currentDate.xsl"/>
     <xsl:include href="titlePage.xsl"/>

@@ -4,8 +4,9 @@
     xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     
-    <xsl:template match="//*[local-name() = 'mirrorSection']" name="mirrorSection">
+    <xsl:template match="oc:section" name="mirrorSection">
         <xsl:param name="frameDir" tunnel="yes"/>
+        <xsl:message>En</xsl:message>
         <xsl:variable name="frameFile">
             <!-- Frame param is the frame directory
                  @frame is the frame attribute with the tag -->

@@ -24,7 +24,7 @@
         <xsl:param name="excludeList"/>
         <xsl:param name="target"/>
         <!-- Copy the attributes with vars replaced -->
-        <xsl:for-each select="$target/@*[not(matches(name(), $excludeList))]">
+        <xsl:for-each select="$target/@*[not(matches(name(.), $excludeList))]">
             <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
         </xsl:for-each>
     </xsl:template>
@@ -35,9 +35,7 @@
         <xsl:param name="filterAttr"/>
         <xsl:param name="result"/>
         <!-- Get target and val by parsing filter string formatted as target = val -->
-        <xsl:message>Enetered</xsl:message>
         <xsl:variable name="filter"><xsl:value-of select="$filterAttr"/></xsl:variable>
-        <xsl:message select="$filter"></xsl:message>
         <xsl:variable name="filterTarget" select="normalize-space(substring-before($filter, '='))"/>
         <xsl:variable name="filterVal" select="normalize-space(substring-after($filter, '='))"/>
         <xsl:variable name="resultVal">

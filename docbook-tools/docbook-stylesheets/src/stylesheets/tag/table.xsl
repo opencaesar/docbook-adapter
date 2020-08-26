@@ -5,7 +5,7 @@
     xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     <!-- Given a frame and columns, genereate a table -->
-    <xsl:template match="//*[local-name() = 'getTable']" name="createTable">
+    <xsl:template match="oc:table" name="createTable">
         <xsl:param name="frameDir" tunnel="yes"/>
         <!-- Title is optional; Use table for title and informalTable otherwise -->
         <xsl:choose>
@@ -13,7 +13,7 @@
                 <table class="getTable" border="0">
                     <!-- Inherit attributes to table --> 
                     <xsl:call-template name="inheritAttributes">
-                        <xsl:with-param name="excludeList" select="'title|frame'"/>
+                        <xsl:with-param name="excludeList" select="'filter|title|frame'"/>
                         <xsl:with-param name="target" select="."/>
                     </xsl:call-template>
                     <caption>
@@ -26,7 +26,8 @@
                 <informaltable class="getTable" border="0">
                     <!-- Inherit attributes to table --> 
                     <xsl:call-template name="inheritAttributes">
-                        <xsl:with-param name="excludeList" select="'title|frame'"/>
+                        <xsl:with-param name="excludeList" select="'filter|title|frame'"/>
+                        <xsl:with-param name="target" select="."/>
                     </xsl:call-template>
                     <xsl:call-template name="tableBody"/>
                 </informaltable>
@@ -60,7 +61,7 @@
                 <td colspan="{$numCols}"/>
             </tr>
             <!-- Check for additional headers --> 
-            <xsl:for-each select="./*[local-name() = 'addHeader']">
+            <xsl:for-each select="./*[local-name() = 'header']">
                 <xsl:call-template name="generateHeader">
                     <xsl:with-param name="class" select="'addHeader'"/>
                     <xsl:with-param name="altColor" select="'#80bfff'"/>
