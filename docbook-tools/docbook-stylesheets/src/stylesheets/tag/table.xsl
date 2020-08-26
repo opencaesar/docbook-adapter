@@ -222,6 +222,7 @@
         </xsl:for-each>
     </xsl:template>
     
+    <!-- Create a table row based on the data from the SPARQL result -->
     <xsl:template name="generateData">
         <xsl:param name="tableTag"/>
         <xsl:param name="result"/>

@@ -6,7 +6,6 @@
     
     <xsl:template match="oc:section" name="mirrorSection">
         <xsl:param name="frameDir" tunnel="yes"/>
-        <xsl:message>En</xsl:message>
         <xsl:variable name="frameFile">
             <!-- Frame param is the frame directory
                  @frame is the frame attribute with the tag -->

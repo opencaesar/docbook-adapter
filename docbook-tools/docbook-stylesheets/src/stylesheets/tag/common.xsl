@@ -41,7 +41,6 @@
         <xsl:variable name="resultVal">
             <xsl:value-of select="normalize-space($result/*[@name = $filterTarget]/*)"/>
         </xsl:variable>
-        <xsl:message select="$resultVal = $filterVal"/>
         <xsl:value-of select="$resultVal = $filterVal"/>
     </xsl:function>
 </xsl:stylesheet>
