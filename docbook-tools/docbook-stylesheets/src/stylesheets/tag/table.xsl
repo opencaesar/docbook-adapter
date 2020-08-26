@@ -54,14 +54,14 @@
             </xsl:call-template>
         </thead>
         <!-- Create table rows by calling other templates -->
-        <xsl:variable name="numCols" select="count($tableTag/*[local-name() = 'column'])"/>
+        <xsl:variable name="numCols" select="count($tableTag/oc:column)"/>
         <tbody>
             <!-- Always add an empty row to avoid empty table error -->
             <tr>
                 <td colspan="{$numCols}"/>
             </tr>
             <!-- Check for additional headers --> 
-            <xsl:for-each select="./*[local-name() = 'header']">
+            <xsl:for-each select="./oc:tableHeader">
                 <xsl:call-template name="generateHeader">
                     <xsl:with-param name="class" select="'addHeader'"/>
                     <xsl:with-param name="altColor" select="'#80bfff'"/>
@@ -71,30 +71,30 @@
                 <xsl:with-param name="framePath" select="$framePath"/>
                 <xsl:with-param name="tableTag" select="$tableTag"/>
             </xsl:call-template>
-            <!-- Create nested tables or inline tables -->
-            <xsl:for-each select="./*">
-                <!-- Nested table -->
-                <xsl:if test="local-name() = 'nestedTable'">
-                    <tr>
-                        <td colspan="{$numCols}">
-                            <xsl:call-template name="createTable"/>
-                        </td>
-                    </tr>
-                </xsl:if>
-                <!-- Inline table -->
-                <xsl:if test="local-name() = 'inlineTable'">
-                    <xsl:call-template name="inlineTable">
-                        <xsl:with-param name="frame" select="$frameDir"/>
-                        <xsl:with-param name="numCols" select="$numCols"/>
-                    </xsl:call-template>
-                </xsl:if>
-            </xsl:for-each>
+            <!-- Create nested tables or inline tables --> 
+            <xsl:apply-templates select="./*[local-name() = 'nestedTable' or local-name() = 'inlineTable']">
+                <xsl:with-param name="frameDir" select="$frameDir" tunnel="yes"/>
+                <xsl:with-param name="numCols" select="$numCols"/>
+            </xsl:apply-templates>
         </tbody>
     </xsl:template>
     
+    <!-- Creates a nested table by making a tr that spans all columns of the original table -->
+    <xsl:template name="nestedTable" match="oc:nestedTable">
+        <xsl:param name="frameDir" tunnel="yes"/>
+        <xsl:param name="numCols"/>
+        <tr>
+            <td colspan="{$numCols}">
+                <xsl:call-template name="createTable">
+                    <xsl:with-param name="frameDir" select="$frameDir" tunnel="yes"/>
+                </xsl:call-template>
+            </td>
+        </tr>
+    </xsl:template>
+    
     <!-- Creates an inline table (which is essentially a bunch of tr elements) -->
-    <xsl:template name="inlineTable">
-        <xsl:param name="frame"/>
+    <xsl:template name="inlineTable" match="oc:inlineTable">
+        <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:param name="numCols"/>
         <!-- If color is given; use it. Otherwise, use default green -->
         <xsl:variable name="pdfColor">
@@ -128,20 +128,18 @@
             <xsl:with-param name="altColor" select="'#BFDFBF'"/>
         </xsl:call-template>
         <xsl:variable name="inlinePath">
-            <xsl:value-of select="$frame"/>
+            <xsl:value-of select="$frameDir"/>
             <xsl:value-of select="@frame"/>
         </xsl:variable>
         <xsl:call-template name="generateRow">
             <xsl:with-param name="tableTag" select="."/>
             <xsl:with-param name="framePath" select="$inlinePath"/>
         </xsl:call-template>
-        <!-- Check for nested inlineTables -->
-        <xsl:for-each select="./*[local-name() = 'inlineTable']">
-            <xsl:call-template name="inlineTable">
-                <xsl:with-param name="frame" select="$frame"/>
-                <xsl:with-param name="numCols" select="$numCols"/>
-            </xsl:call-template>
-        </xsl:for-each>
+        <!-- Create nested tables or inline tables --> 
+        <xsl:apply-templates select="./*[local-name() = 'nestedTable' or local-name() = 'inlineTable']">
+            <xsl:with-param name="frame" select="$frameDir" tunnel="yes"/>
+            <xsl:with-param name="numCols" select="$numCols"/>
+        </xsl:apply-templates>
     </xsl:template>
     
     <!-- Creates th elements with the appropriate data for the headers and
@@ -171,7 +169,7 @@
             <!-- Use a processing instruction for the pdf format --> 
             <xsl:processing-instruction name="dbfo">
                         bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
-            <xsl:for-each select="./*[local-name() = 'column']">
+            <xsl:for-each select="./oc:column">
                 <!-- Create the header elements -->
                 <th>
                     <!-- Wrap in emphasis to create bold text --> 
@@ -200,7 +198,7 @@
         <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
             <xsl:variable name="result" select="."/>
             <!-- If the result has a binding that matches to any of the column's target att -->
-            <xsl:if test="$result/*[@name = $tableTag/*[local-name() = 'column']/@target]">
+            <xsl:if test="$result/*[@name = $tableTag/oc:column/@target]">
                 <!-- Check for a filter -->
                 <xsl:choose>
                     <xsl:when test="$tableTag/@filter">
@@ -228,7 +226,7 @@
         <xsl:param name="tableTag"/>
         <xsl:param name="result"/>
         <tr>
-            <xsl:for-each select="$tableTag/*[local-name() = 'column']">
+            <xsl:for-each select="$tableTag/oc:column">
                 <xsl:variable name="target">
                     <xsl:value-of select="@target"/>
                 </xsl:variable>
