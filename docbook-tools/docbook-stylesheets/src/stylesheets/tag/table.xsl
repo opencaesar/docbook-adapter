@@ -7,32 +7,41 @@
     <!-- Given a frame and columns, genereate a table -->
     <xsl:template match="oc:table" name="createTable">
         <xsl:param name="frameDir" tunnel="yes"/>
-        <!-- Title is optional; Use table for title and informalTable otherwise -->
-        <xsl:choose>
-            <xsl:when test="@title">
-                <table class="getTable" border="0">
-                    <!-- Inherit attributes to table --> 
-                    <xsl:call-template name="inheritAttributes">
-                        <xsl:with-param name="excludeList" select="'filter|title|frame'"/>
-                        <xsl:with-param name="target" select="."/>
-                    </xsl:call-template>
-                    <caption>
-                        <xsl:value-of select="@title"/>
-                    </caption>
-                    <xsl:call-template name="tableBody"/>
-                </table>
-            </xsl:when>
-            <xsl:otherwise>
-                <informaltable class="getTable" border="0">
-                    <!-- Inherit attributes to table --> 
-                    <xsl:call-template name="inheritAttributes">
-                        <xsl:with-param name="excludeList" select="'filter|title|frame'"/>
-                        <xsl:with-param name="target" select="."/>
-                    </xsl:call-template>
-                    <xsl:call-template name="tableBody"/>
-                </informaltable>
-            </xsl:otherwise>
-        </xsl:choose>
+        <!-- First create body to check if it is empty or not -->
+        <xsl:variable name="tableBody">
+            <xsl:call-template name="tableBody"/>
+        </xsl:variable>
+        <!-- Only make the table if the number of children in tbody is greater than 0 -->
+        <xsl:if test="count($tableBody/*[local-name() = 'tbody']/*) > 0">
+            <!-- Title is optional; Use table for title and informalTable otherwise -->
+            <xsl:choose>
+                <xsl:when test="@title">
+                    <table class="getTable" border="0">
+                        <!-- Inherit attributes to table --> 
+                        <xsl:call-template name="inheritAttributes">
+                            <xsl:with-param name="excludeList" select="'filter|title|frame'"/>
+                            <xsl:with-param name="target" select="."/>
+                        </xsl:call-template>
+                        <caption>
+                            <xsl:value-of select="@title"/>
+                        </caption>
+                        <!-- <xsl:call-template name="tableBody"/> -->
+                        <xsl:copy-of select="$tableBody"/>
+                    </table>
+                </xsl:when>
+                <xsl:otherwise>
+                    <informaltable class="getTable" border="0">
+                        <!-- Inherit attributes to table --> 
+                        <xsl:call-template name="inheritAttributes">
+                            <xsl:with-param name="excludeList" select="'filter|title|frame'"/>
+                            <xsl:with-param name="target" select="."/>
+                        </xsl:call-template>
+                        <!-- <xsl:call-template name="tableBody"/> -->
+                        <xsl:copy-of select="$tableBody"/>
+                    </informaltable>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:if>
     </xsl:template>
 
     <!-- Table body -->
@@ -56,17 +65,12 @@
         <!-- Create table rows by calling other templates -->
         <xsl:variable name="numCols" select="count($tableTag/oc:column)"/>
         <tbody>
-            <!-- Always add an empty row to avoid empty table error -->
-            <tr>
-                <td colspan="{$numCols}"/>
-            </tr>
             <!-- Check for additional headers --> 
-            <xsl:for-each select="./oc:tableHeader">
-                <xsl:call-template name="generateHeader">
-                    <xsl:with-param name="class" select="'addHeader'"/>
-                    <xsl:with-param name="altColor" select="'#80bfff'"/>
-                </xsl:call-template>
-            </xsl:for-each>
+            <xsl:apply-templates select="./oc:tableHeader">
+                <xsl:with-param name="class" select="'addHeader'"/>
+                <xsl:with-param name="altColor" select="'#80bfff'"/>
+            </xsl:apply-templates>
+            <!-- Generate the body rows -->
             <xsl:call-template name="generateRow">
                 <xsl:with-param name="framePath" select="$framePath"/>
                 <xsl:with-param name="tableTag" select="$tableTag"/>
@@ -144,7 +148,7 @@
     
     <!-- Creates th elements with the appropriate data for the headers and
          wraps these elements appropriately-->
-    <xsl:template name="generateHeader">
+    <xsl:template name="generateHeader" match="oc:tableHeader">
         <xsl:param name="class"/>
         <xsl:param name="altColor"/>
         <!-- If color is given; use it. Otherwise, use the given altColor -->
@@ -195,29 +199,15 @@
         <xsl:param name="framePath"/>
         <xsl:param name="tableTag"/>
         <!-- Organize rows based on the first column's value -->
+        <!-- Context node (which is .) is now the result being looked at -->
         <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
-            <xsl:variable name="result" select="."/>
             <!-- If the result has a binding that matches to any of the column's target att -->
-            <xsl:if test="$result/*[@name = $tableTag/oc:column/@target]">
-                <!-- Check for a filter -->
-                <xsl:choose>
-                    <xsl:when test="$tableTag/@filter">
-                        <!-- Function located in common.xsl -->
-                        <xsl:if test="oc:checkFilter($tableTag/@filter, $result)">
-                            <xsl:call-template name="generateData">
-                                <xsl:with-param name="result" select="$result"/>
-                                <xsl:with-param name="tableTag" select="$tableTag"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <!-- No filter, so generate data -->
-                        <xsl:call-template name="generateData">
-                            <xsl:with-param name="result" select="$result"/>
-                            <xsl:with-param name="tableTag" select="$tableTag"/>
-                        </xsl:call-template>                        
-                    </xsl:otherwise>
-                </xsl:choose>
+            <!-- Also check if there is a filter, and if it does have one, check if the result passes -->
+            <xsl:if test="./*[@name = $tableTag/oc:column/@target] and oc:checkFilter($tableTag, .)">
+                <xsl:call-template name="generateData">
+                    <xsl:with-param name="result" select="."/>
+                    <xsl:with-param name="tableTag" select="$tableTag"/>
+                </xsl:call-template>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>

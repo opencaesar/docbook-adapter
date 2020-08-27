@@ -28,7 +28,7 @@
         <xsl:for-each select="document($frameFile)/*/*/*[local-name() = 'result']">
             <xsl:variable name="res" select="."/>
             <!-- Check filter condition --> 
-            <xsl:if test="not($sectionTag/@filter) or oc:checkFilter($sectionTag/@filter, $res)">
+            <xsl:if test="oc:checkFilter($sectionTag, $res)">
                 <!-- Create a section with the title -->
                 <section>
                     <title>
