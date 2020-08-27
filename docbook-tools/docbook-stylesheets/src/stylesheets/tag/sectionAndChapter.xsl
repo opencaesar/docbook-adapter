@@ -4,7 +4,7 @@
     xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     
-    <xsl:template match="oc:section" name="mirrorSection">
+    <xsl:template match="oc:section">
         <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:variable name="frameFile">
             <!-- Frame param is the frame directory
@@ -15,50 +15,106 @@
         <!-- Make a map of vars and a varList entry --> 
         <!-- Variables are used by surrounding _varName_ -->
         <xsl:variable name="varMap">
-           <!-- First map varList -> varName1|varName2|... -->
-           <entry key="varList">
-               <xsl:value-of select="./*[local-name() = 'var']/@name" separator="|"/>
-           </entry>
-            <!-- For each var, map [name -> target] --> 
-            <xsl:for-each select="./*[local-name() = 'var']">
-                <entry key="{@name}"><xsl:value-of select="@target"/></entry>
-            </xsl:for-each>
+            <xsl:call-template name="varMap"/>
         </xsl:variable>
-        <!-- Make a section for each result -->
         <xsl:for-each select="document($frameFile)/*/*/*[local-name() = 'result']">
-            <xsl:variable name="res" select="."/>
+            <!-- Context node: row in sparql frame -->
             <!-- Check filter condition --> 
-            <xsl:if test="oc:checkFilter($sectionTag, $res)">
-                <!-- Create a section with the title -->
+            <xsl:if test="oc:checkFilter($sectionTag, .)">
+                <!-- Create a section and call on a template to fill the content-->
                 <section>
-                    <title>
-                        <xsl:call-template name="varReplace">
-                            <xsl:with-param name="val" select="$sectionTag/@title"/>
-                            <xsl:with-param name="result" select="."/>
-                            <xsl:with-param name="varMap" select="$varMap"/>
-                        </xsl:call-template>
-                    </title> 
-                    <xsl:for-each select="$sectionTag/*">
-                        <!-- For each child, check for _vars_ in each of the child's attributes -->
-                        <xsl:variable name="element">
-                            <xsl:call-template name="elementMake">
-                                <xsl:with-param name="res" select="$res"/>
-                                <xsl:with-param name="varMap" select="$varMap"/>
-                            </xsl:call-template>
-                        </xsl:variable>
-                        <!-- Now that the vars are replaced, apply the appropriate template for the element -->
-                        <xsl:apply-templates select="$element">
-                            <xsl:with-param name="result" select="." tunnel="yes"/>
-                            <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
-                        </xsl:apply-templates>
-                    </xsl:for-each>
+                    <xsl:call-template name="templateContent">
+                        <xsl:with-param name="tag" select="$sectionTag"/>
+                        <xsl:with-param name="varMap" select="$varMap"/>
+                    </xsl:call-template>
                 </section>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
     
+    <xsl:template match="oc:chapter">
+        <xsl:param name="frameDir" tunnel="yes"/>
+        <xsl:variable name="frameFile">
+            <!-- Frame param is the frame directory
+                 @frame is the frame attribute with the tag -->
+            <xsl:value-of select="$frameDir"/><xsl:value-of select="@frame"/>
+        </xsl:variable> 
+        <xsl:variable name="chapterTag" select="."/>
+        <!-- Make a map of vars and a varList entry --> 
+        <!-- Variables are used by surrounding _varName_ -->
+        <xsl:variable name="varMap">
+            <xsl:call-template name="varMap"/>
+        </xsl:variable>
+        <xsl:for-each select="document($frameFile)/*/*/*[local-name() = 'result']">
+            <!-- Context node: row in sparql frame -->
+            <!-- Check filter condition --> 
+            <xsl:if test="oc:checkFilter($chapterTag, .)">
+                <!-- Create a section and call on a template to fill the content-->
+                <chapter>
+                    <xsl:call-template name="templateContent">
+                        <xsl:with-param name="tag" select="$chapterTag"/>
+                        <xsl:with-param name="varMap" select="$varMap"/>
+                    </xsl:call-template>
+                </chapter>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
+    
+    
+    <!-- Tag is a variable holding the chapter or section tag to base the template off of-->
+    <!-- @Param varMap: Map containing entries that have name -> value: 
+            varList -> var1|var2|...
+            @name -> @target 
+            -->
+    <xsl:template name="templateContent">
+        <!-- Context node is a row in the sparql frame -->
+        <xsl:param name="tag"/>
+        <xsl:param name="varMap"/>
+        <xsl:param name="frameDir" tunnel="yes"/>
+        <title>
+            <xsl:call-template name="varReplace">
+                <xsl:with-param name="val" select="$tag/@title"/>
+                <xsl:with-param name="result" select="."/>
+                <xsl:with-param name="varMap" select="$varMap"/>
+            </xsl:call-template>
+        </title> 
+        <xsl:variable name="res" select="."/>
+        <xsl:for-each select="$tag/*">
+            <!-- For each child, check for _vars_ in each of the child's attributes -->
+            <!-- Context node is now the children of the tag -->
+            <xsl:variable name="element">
+                <xsl:call-template name="elementMake">
+                    <xsl:with-param name="res" select="$res"/>
+                    <xsl:with-param name="varMap" select="$varMap"/>
+                </xsl:call-template>
+            </xsl:variable>
+            <!-- Now that the vars are replaced, apply the appropriate template for the element -->
+            <xsl:apply-templates select="$element">
+                <xsl:with-param name="result" select="$res" tunnel="yes"/>
+                <xsl:with-param name="varMap" select="$varMap" tunnel="yes"/>
+            </xsl:apply-templates>
+        </xsl:for-each>
+    </xsl:template>
+    
     <!-- Template for var: Simply ensures that var is not copied over to the output -->
     <xsl:template match="//*[local-name() = 'var']"/>
+    
+    <!-- Template for making varMap. Template call should wrap this in a variable
+         Creates a list of entries with a name attribute. Entries are
+         varList -> var1|var2|...
+         @name -> @target 
+         -->
+    <xsl:template name="varMap">
+        <!-- First map varList -> varName1|varName2|... -->
+        <entry key="varList">
+            <xsl:value-of select="./*[local-name() = 'var']/@name" separator="|"/>
+        </entry>
+        <!-- For each var, map [name -> target] --> 
+        <xsl:for-each select="./*[local-name() = 'var']">
+            <entry key="{@name}"><xsl:value-of select="@target"/></entry>
+        </xsl:for-each>
+    </xsl:template>
+    
     
     <!-- Template for creating the elements with their attr values replaced with vars -->
     <xsl:template name="elementMake">

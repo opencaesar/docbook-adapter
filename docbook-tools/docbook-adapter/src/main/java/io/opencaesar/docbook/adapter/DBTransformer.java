@@ -82,9 +82,10 @@ abstract class DBTransformer{
 	
 	// Adds params to the transformer that are common to both renders
 	public void addCommonParams(Transformer transformer) {
+		// Section.autolabel turns on section numbering, and 1 means to use Arabic numerals
 		transformer.setParameter("section.autolabel", "1");
+		// Section.label.includes.component.label set to 1 includes the chapter number in the numbering
 		transformer.setParameter("section.label.includes.component.label", "1");
-		transformer.setParameter("chapter.autolabel", "0");
 	}
 	
 	/**
