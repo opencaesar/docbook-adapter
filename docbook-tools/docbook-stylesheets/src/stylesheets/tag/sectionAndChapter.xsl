@@ -71,6 +71,17 @@
         <xsl:param name="tag"/>
         <xsl:param name="varMap"/>
         <xsl:param name="frameDir" tunnel="yes"/>
+        <!-- Create an id for linking if link is given -->
+        <xsl:if test="$tag/@id">
+            <xsl:attribute name="id">
+                <xsl:call-template name="varReplace">
+                    <xsl:with-param name="val" select="$tag/@id"/>
+                    <xsl:with-param name="result" select="."/>
+                    <xsl:with-param name="varMap" select="$varMap"/>
+                </xsl:call-template>
+            </xsl:attribute>
+        </xsl:if>
+        <!-- Create the title and replace any potential variables -->
         <title>
             <xsl:call-template name="varReplace">
                 <xsl:with-param name="val" select="$tag/@title"/>
@@ -78,9 +89,11 @@
                 <xsl:with-param name="varMap" select="$varMap"/>
             </xsl:call-template>
         </title> 
+        <!-- Save the context node (row in a sparql frame) as a variable 
+             as we are going to need it after we change the context node -->
         <xsl:variable name="res" select="."/>
+        <!-- For each child, check for _vars_ in each of the child's attributes -->
         <xsl:for-each select="$tag/*">
-            <!-- For each child, check for _vars_ in each of the child's attributes -->
             <!-- Context node is now the children of the tag -->
             <xsl:variable name="element">
                 <xsl:call-template name="elementMake">

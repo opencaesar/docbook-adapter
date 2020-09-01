@@ -221,10 +221,44 @@
                 <xsl:variable name="target">
                     <xsl:value-of select="@target"/>
                 </xsl:variable>
-                <td>
+                <xsl:variable name="value">
                     <xsl:if test="$result/*[@name = $target]">
                         <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
                     </xsl:if>
+                </xsl:variable>
+                <td>
+                    <!-- If this column has a link attribute -->
+                    <xsl:choose>
+                        <xsl:when test="./@link">
+                            <!-- Get the link address by replacing %target% with data from frame-->
+                            <xsl:variable name="link">
+                                <xsl:for-each select="tokenize(./@link, ' ')">
+                                    <!-- Context node: Each token from the value of @link -->
+                                    <xsl:variable name="out">
+                                        <xsl:choose>
+                                            <!-- Regex matching $Anything$Anything -->
+                                            <xsl:when test="matches(., '_.*_.*')">
+                                                <xsl:variable name="target" select="substring-before(substring-after(., '_'), '_')"/>
+                                                <xsl:variable name="resultVal">
+                                                    <xsl:value-of select="$result/*[@name = $target]/*"/>
+                                                </xsl:variable>
+                                                <xsl:value-of select="replace(., concat(concat('_', $target), '_'), $resultVal)"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="."/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:variable>
+                                    <xsl:sequence select="string($out)"/>
+                                </xsl:for-each>
+                            </xsl:variable>
+                            <link linkend='{$link}'><xsl:value-of select="$value"/></link>
+                            <!-- Create a link with $value as its appearing text -->
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$value"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </td>
             </xsl:for-each>
         </tr>
