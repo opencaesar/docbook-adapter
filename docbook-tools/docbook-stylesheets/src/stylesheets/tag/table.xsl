@@ -240,6 +240,10 @@
                         <xsl:with-param name="tableTag" select="$interleaveTag"/>
                     </xsl:call-template>
                 </xsl:element>
+                <!-- Check if there are interleaving tables that are necessary -->
+                <xsl:apply-templates select="$interleaveTag/oc:interleaveTable">
+                    <xsl:with-param name="result" select="."/>
+                </xsl:apply-templates>
             </xsl:if>
         </xsl:for-each>
         <!-- Create nested tables or inline tables --> 
