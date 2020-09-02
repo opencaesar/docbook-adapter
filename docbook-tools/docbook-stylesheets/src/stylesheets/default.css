@@ -24,6 +24,13 @@ tr.inlineTitle {
     background-color: #BFDFBF;
 }
 
+tr.inlineBody {}
+
+/* 
+ * Stlying for table body created by oc:table or oc:nestedTable (which is default to none)
+ */
+tr.ocTable {}
+
 /* 
  * Styling for additional headers created by oc:tableHeader
  */

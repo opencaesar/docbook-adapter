@@ -9,7 +9,9 @@
         <xsl:param name="frameDir" tunnel="yes"/>
         <!-- First create body to check if it is empty or not -->
         <xsl:variable name="tableBody">
-            <xsl:call-template name="tableBody"/>
+            <xsl:call-template name="tableBody">
+                <xsl:with-param name="bodyClass" select="'ocTable'"/>
+            </xsl:call-template>
         </xsl:variable>
         <!-- Only make the table if the number of children in tbody is greater than 0 -->
         <xsl:if test="count($tableBody/*[local-name() = 'tbody']/*) > 0">
@@ -47,6 +49,7 @@
     <!-- Creates the table body. -->
     <xsl:template name="tableBody">
         <xsl:param name="frameDir" tunnel="yes"/>
+        <xsl:param name="bodyClass"/>
         <!-- Variable holding the entire tag. Used as we change nodes later -->
         <xsl:variable name="tableTag" select="."/>
         <xsl:variable name="framePath">
@@ -73,6 +76,7 @@
             <xsl:call-template name="generateRow">
                 <xsl:with-param name="framePath" select="$framePath"/>
                 <xsl:with-param name="tableTag" select="$tableTag"/>
+                <xsl:with-param name="bodyClass" select="$bodyClass"/>
             </xsl:call-template>
             <!-- Create nested tables or inline tables --> 
             <xsl:apply-templates select="./*[local-name() = 'nestedTable' or local-name() = 'inlineTable']">
@@ -99,32 +103,18 @@
     <xsl:template name="inlineTable" match="oc:inlineTable">
         <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:param name="numCols"/>
-        <!-- If color is given; use it. Otherwise, use default green -->
-        <xsl:variable name="pdfColor">
-            <xsl:choose>
-                <xsl:when test="@headerColor">
-                    <xsl:value-of select="@headerColor"/>
-                </xsl:when>
-                <xsl:otherwise>#BFDFBF</xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <!-- If color is given; use it. Otherwise, default to the css --> 
-        <xsl:variable name="htmlColor">
-            <xsl:choose>
-                <xsl:when test="@headerColor">background-color:<xsl:value-of select="@headerColor"/>
-                </xsl:when>
-                <xsl:otherwise></xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
         <!-- Create title if given -->
         <xsl:if test="@title">
-            <tr class="inlineTitle" style="{$htmlColor}">
-                <xsl:processing-instruction name="dbfo">
-                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
+            <xsl:element name="tr">
+                <!-- Apply coloring and class; default color is green -->
+                <xsl:call-template name="headerStyling">
+                    <xsl:with-param name="altColor" select="'#BFDFBF'"/>
+                    <xsl:with-param name="class" select="'inlineTitle'"/>
+                </xsl:call-template>
                 <th colspan="{$numCols}">
                     <emphasis role="bold"><xsl:value-of select="@title"/></emphasis>
                 </th>
-            </tr>
+            </xsl:element>
         </xsl:if>
         <!-- Creates headers for the table -->
         <xsl:call-template name="generateHeader">
@@ -140,6 +130,7 @@
         <xsl:call-template name="generateRow">
             <xsl:with-param name="tableTag" select="."/>
             <xsl:with-param name="framePath" select="$inlinePath"/>
+            <xsl:with-param name="bodyClass" select="'inlineBody'"/>
         </xsl:call-template>
         <!-- Create nested tables or inline tables --> 
         <xsl:apply-templates select="./*[local-name() = 'nestedTable' or local-name() = 'inlineTable']">
@@ -153,28 +144,12 @@
     <xsl:template name="generateHeader" match="oc:tableHeader">
         <xsl:param name="class"/>
         <xsl:param name="altColor"/>
-        <!-- If color is given; use it. Otherwise, use the given altColor -->
-        <xsl:variable name="pdfColor">
-            <xsl:choose>
-                <xsl:when test="@headerColor">
-                    <xsl:value-of select="@headerColor"/>
-                </xsl:when>
-                <xsl:otherwise><xsl:value-of select="$altColor"/></xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <!-- If color is given; use it. Otherwise, default to the css --> 
-        <xsl:variable name="htmlColor">
-            <xsl:choose>
-                <xsl:when test="@headerColor">background-color:<xsl:value-of select="@headerColor"/>
-                </xsl:when>
-                <xsl:otherwise></xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <!-- Apply the style to the tr -->
-        <tr class="{$class}" style="{$htmlColor}">
-            <!-- Use a processing instruction for the pdf format --> 
-            <xsl:processing-instruction name="dbfo">
-                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
+        <xsl:element name="tr">
+            <!-- Call template to apply colors and styling --> 
+            <xsl:call-template name="headerStyling">
+                <xsl:with-param name="class" select="$class"/>
+                <xsl:with-param name="altColor" select="$altColor"/>
+            </xsl:call-template>
             <xsl:for-each select="./oc:column">
                 <!-- Create the header elements -->
                 <th>
@@ -192,7 +167,7 @@
                     </emphasis>
                 </th>
             </xsl:for-each>
-        </tr>
+        </xsl:element>
     </xsl:template>
 
     <!-- Creates tr elements with the appropriate data for the table body 
@@ -201,18 +176,26 @@
     <xsl:template name="generateRow">
         <xsl:param name="framePath"/>
         <xsl:param name="tableTag"/>
+        <xsl:param name="bodyClass"/>
         <!-- Organize rows based on the first column's value -->
         <!-- Context node is now the result being looked at -->
         <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
             <!-- If the result has a binding that matches to any of the column's target att -->
             <!-- Also check if there is a filter, and if it does have one, check if the result passes -->
             <xsl:if test="./*[@name = $tableTag/oc:column/@target] and oc:checkFilter($tableTag, .)">
-                <tr>
+                <xsl:element name="tr">
+                    <!-- Apply class and color -->
+                    <xsl:call-template name="bodyStyling">
+                        <xsl:with-param name="class" select="$bodyClass"/>
+                        <xsl:with-param name="altColor" select="''"/>
+                        <xsl:with-param name="tag" select="$tableTag"/>
+                    </xsl:call-template>
+                    <!-- Generate data -->
                     <xsl:call-template name="generateData">
                         <xsl:with-param name="result" select="."/>
                         <xsl:with-param name="tableTag" select="$tableTag"/>
                     </xsl:call-template>
-                </tr>
+                </xsl:element>
                 <!-- Check if there are interleaving tables that are necessary -->
                 <xsl:apply-templates select="$tableTag/oc:interleaveTable">
                     <xsl:with-param name="result" select="."/>
@@ -244,14 +227,19 @@
             <!-- If the result has a binding that matches to any of the column's target att -->
             <!-- Also check if there is a filter, and if it does have one, check if the result passes -->
             <xsl:if test="./*[@name = $interleaveTag/oc:column/@target] and oc:checkFilter($filter/*[local-name() = 'filterHold'], .)">
-                <tr style="background-color:#BFDFBF">
-                    <xsl:processing-instruction name="dbfo">
-                        bgcolor="#BFDFBF"</xsl:processing-instruction>
+                <xsl:element name="tr">
+                    <!-- Apply class and color -->
+                    <xsl:call-template name="bodyStyling">
+                        <xsl:with-param name="class" select="'interleaveTable'"/>
+                        <xsl:with-param name="altColor" select="'#BFDFBF'"/>
+                        <xsl:with-param name="tag" select="$interleaveTag"/>
+                    </xsl:call-template>
+                    <!-- Create the data -->
                     <xsl:call-template name="generateData">
                         <xsl:with-param name="result" select="."/>
                         <xsl:with-param name="tableTag" select="$interleaveTag"/>
                     </xsl:call-template>
-                </tr>
+                </xsl:element>
             </xsl:if>
         </xsl:for-each>
         <!-- Create nested tables or inline tables --> 
@@ -321,4 +309,76 @@
         </xsl:variable>
         <xsl:value-of select="$returnVal"/>
     </xsl:function>
+    
+    <!-- Creates 2 attributes and a dbfo processing instruction related to color/class -->
+    <!-- Styling for header as it looks for @header -->
+    <xsl:template name="headerStyling">
+        <xsl:param name="class"/>
+        <xsl:param name="altColor"/>
+        <!-- If color is given; use it. Otherwise, default to the css (html) --> 
+        <xsl:variable name="style">
+            <xsl:choose>
+                <xsl:when test="@headerColor">background-color:<xsl:value-of select="@headerColor"/>
+                </xsl:when>
+                <xsl:otherwise></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- If color is given; use it. Otherwise, use the given altColor -->
+        <xsl:variable name="pdfColor">
+            <xsl:choose>
+                <xsl:when test="@headerColor">
+                    <xsl:value-of select="@headerColor"/>
+                </xsl:when>
+                <xsl:otherwise><xsl:value-of select="$altColor"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- Create attribute nodes and pi --> 
+        <xsl:call-template name="classAndStyle">
+            <xsl:with-param name="class" select="$class"/>
+            <xsl:with-param name="style" select="$style"/>
+            <xsl:with-param name="pdfColor" select="$pdfColor"/>
+        </xsl:call-template>
+    </xsl:template>
+    
+    <!-- Creates 2 attributes and a dbfo processing instruction related to color/class -->
+    <!-- Styling for body as it looks for @body -->
+    <xsl:template name="bodyStyling">
+        <xsl:param name="class"/>
+        <xsl:param name="altColor"/>
+        <xsl:param name="tag"/>
+        <!-- If color is given; use it. Otherwise, default to the css (html) --> 
+        <xsl:variable name="style">
+            <xsl:choose>
+                <xsl:when test="$tag/@bodyColor">background-color:<xsl:value-of select="$tag/@bodyColor"/>
+                </xsl:when>
+                <xsl:otherwise></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- If color is given; use it. Otherwise, use the given altColor -->
+        <xsl:variable name="pdfColor">
+            <xsl:choose>
+                <xsl:when test="$tag/@bodyColor">
+                    <xsl:value-of select="$tag/@bodyColor"/>
+                </xsl:when>
+                <xsl:otherwise><xsl:value-of select="$altColor"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- Create attribute nodes and pi --> 
+        <xsl:call-template name="classAndStyle">
+            <xsl:with-param name="class" select="$class"/>
+            <xsl:with-param name="style" select="$style"/>
+            <xsl:with-param name="pdfColor" select="$pdfColor"/>
+        </xsl:call-template>
+    </xsl:template>
+    
+    <!-- Template that creates the actual attributes and dbfo pi -->
+    <xsl:template name="classAndStyle">
+        <xsl:param name="class"/>
+        <xsl:param name="style"/>
+        <xsl:param name="pdfColor"/>
+        <xsl:attribute name="style" select="$style"/>
+        <xsl:attribute name="class" select="$class"/>
+        <xsl:processing-instruction name="dbfo">
+                        bgcolor="<xsl:value-of select="$pdfColor"/>"</xsl:processing-instruction>
+    </xsl:template>
 </xsl:stylesheet>
