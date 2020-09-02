@@ -4,7 +4,7 @@
     xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="xs" version="2.0">
     <!-- Replace the tag with today's date (date that tag replacement was done) -->
-    <xsl:template match="oc:currentDate">
+    <xsl:template match="oc:date">
         <xsl:param name="date" tunnel="yes"/>
         <xsl:value-of select="$date"/>
     </xsl:template>

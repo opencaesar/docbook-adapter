@@ -44,7 +44,7 @@
         </xsl:if>
     </xsl:template>
 
-    <!-- Table body -->
+    <!-- Creates the table body. -->
     <xsl:template name="tableBody">
         <xsl:param name="frameDir" tunnel="yes"/>
         <!-- Variable holding the entire tag. Used as we change nodes later -->
@@ -63,7 +63,6 @@
             </xsl:call-template>
         </thead>
         <!-- Create table rows by calling other templates -->
-        <xsl:variable name="numCols" select="count($tableTag/oc:column)"/>
         <tbody>
             <!-- Check for additional headers --> 
             <xsl:apply-templates select="./oc:tableHeader">
@@ -78,7 +77,7 @@
             <!-- Create nested tables or inline tables --> 
             <xsl:apply-templates select="./*[local-name() = 'nestedTable' or local-name() = 'inlineTable']">
                 <xsl:with-param name="frameDir" select="$frameDir" tunnel="yes"/>
-                <xsl:with-param name="numCols" select="$numCols"/>
+                <xsl:with-param name="numCols" select="count($tableTag/oc:column)"/>
             </xsl:apply-templates>
         </tbody>
     </xsl:template>
@@ -127,14 +126,17 @@
                 </th>
             </tr>
         </xsl:if>
+        <!-- Creates headers for the table -->
         <xsl:call-template name="generateHeader">
             <xsl:with-param name="class" select="'inlineHeader'"/>
             <xsl:with-param name="altColor" select="'#BFDFBF'"/>
         </xsl:call-template>
+        <!-- Path to the frame -->
         <xsl:variable name="inlinePath">
             <xsl:value-of select="$frameDir"/>
             <xsl:value-of select="@frame"/>
         </xsl:variable>
+        <!-- Creates the table rows -->
         <xsl:call-template name="generateRow">
             <xsl:with-param name="tableTag" select="."/>
             <xsl:with-param name="framePath" select="$inlinePath"/>
@@ -194,73 +196,129 @@
     </xsl:template>
 
     <!-- Creates tr elements with the appropriate data for the table body 
-         wrap these elements if needed (such as with tbody)-->
+         wrap these elements if needed (such as with tbody)
+         Also calls the interleaveTable template -->
     <xsl:template name="generateRow">
         <xsl:param name="framePath"/>
         <xsl:param name="tableTag"/>
         <!-- Organize rows based on the first column's value -->
-        <!-- Context node (which is .) is now the result being looked at -->
+        <!-- Context node is now the result being looked at -->
         <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
             <!-- If the result has a binding that matches to any of the column's target att -->
             <!-- Also check if there is a filter, and if it does have one, check if the result passes -->
             <xsl:if test="./*[@name = $tableTag/oc:column/@target] and oc:checkFilter($tableTag, .)">
-                <xsl:call-template name="generateData">
+                <tr>
+                    <xsl:call-template name="generateData">
+                        <xsl:with-param name="result" select="."/>
+                        <xsl:with-param name="tableTag" select="$tableTag"/>
+                    </xsl:call-template>
+                </tr>
+                <!-- Check if there are interleaving tables that are necessary -->
+                <xsl:apply-templates select="$tableTag/oc:interleaveTable">
                     <xsl:with-param name="result" select="."/>
-                    <xsl:with-param name="tableTag" select="$tableTag"/>
-                </xsl:call-template>
+                </xsl:apply-templates>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
     
-    <!-- Create a table row based on the data from the SPARQL result -->
+    <!-- Create table rows from a different frame interleaved into the main table -->
+    <xsl:template name="interleaveTable" match="oc:interleaveTable">
+        <!-- Context node: oc:interleaveTable -->
+        <xsl:param name="result"/>
+        <xsl:param name="frameDir" tunnel="yes"/>
+        <!-- Get the path of the new frame -->
+        <xsl:variable name="framePath">
+            <!-- Frame variable is the frame path
+                 @frame is the frame attribute with the tag -->
+            <xsl:value-of select="$frameDir"/>
+            <xsl:value-of select="@frame"/>
+        </xsl:variable>
+        <!-- Create a element with a filter tag that will be used as the filter 
+             This is because we cannot alter the attribute of an element already made -->
+        <xsl:variable name="filter">
+            <oc:filterHold filter="{oc:tableVarReplace(./@filter, $result)}"/>
+        </xsl:variable>
+        <xsl:variable name="interleaveTag" select="."/>
+        <!-- Context node is now the result being looked at -->
+        <xsl:for-each select="document($framePath)/*/*/*[local-name() = 'result']">
+            <!-- If the result has a binding that matches to any of the column's target att -->
+            <!-- Also check if there is a filter, and if it does have one, check if the result passes -->
+            <xsl:if test="./*[@name = $interleaveTag/oc:column/@target] and oc:checkFilter($filter/*[local-name() = 'filterHold'], .)">
+                <tr style="background-color:#BFDFBF">
+                    <xsl:processing-instruction name="dbfo">
+                        bgcolor="#BFDFBF"</xsl:processing-instruction>
+                    <xsl:call-template name="generateData">
+                        <xsl:with-param name="result" select="."/>
+                        <xsl:with-param name="tableTag" select="$interleaveTag"/>
+                    </xsl:call-template>
+                </tr>
+            </xsl:if>
+        </xsl:for-each>
+        <!-- Create nested tables or inline tables --> 
+        <xsl:apply-templates select="./*[local-name() = 'nestedTable' or local-name() = 'inlineTable']">
+            <xsl:with-param name="frameDir" select="$frameDir" tunnel="yes"/>
+            <xsl:with-param name="numCols" select="count($interleaveTag/oc:column)"/>
+        </xsl:apply-templates>
+    </xsl:template>
+    
+    <!-- Create a table data cells based on the data from the SPARQL result -->
+    <!-- The results are expected to be wrapped by tr -->
     <xsl:template name="generateData">
         <xsl:param name="tableTag"/>
         <xsl:param name="result"/>
-        <tr>
-            <xsl:for-each select="$tableTag/oc:column">
-                <xsl:variable name="target">
-                    <xsl:value-of select="@target"/>
-                </xsl:variable>
-                <xsl:variable name="value">
-                    <xsl:if test="$result/*[@name = $target]">
-                        <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
-                    </xsl:if>
-                </xsl:variable>
-                <td>
-                    <!-- If this column has a link attribute -->
-                    <xsl:choose>
-                        <xsl:when test="./@link">
-                            <!-- Get the link address by replacing %target% with data from frame-->
-                            <xsl:variable name="link">
-                                <xsl:for-each select="tokenize(./@link, ' ')">
-                                    <!-- Context node: Each token from the value of @link -->
-                                    <xsl:variable name="out">
-                                        <xsl:choose>
-                                            <!-- Regex matching $Anything$Anything -->
-                                            <xsl:when test="matches(., '_.*_.*')">
-                                                <xsl:variable name="target" select="substring-before(substring-after(., '_'), '_')"/>
-                                                <xsl:variable name="resultVal">
-                                                    <xsl:value-of select="$result/*[@name = $target]/*"/>
-                                                </xsl:variable>
-                                                <xsl:value-of select="replace(., concat(concat('_', $target), '_'), $resultVal)"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="."/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:variable>
-                                    <xsl:sequence select="string($out)"/>
-                                </xsl:for-each>
-                            </xsl:variable>
-                            <link linkend='{$link}'><xsl:value-of select="$value"/></link>
-                            <!-- Create a link with $value as its appearing text -->
-                        </xsl:when>
-                        <xsl:otherwise>
+        <xsl:for-each select="$tableTag/oc:column">
+            <xsl:variable name="target">
+                <xsl:value-of select="@target"/>
+            </xsl:variable>
+            <xsl:variable name="value">
+                <xsl:if test="$result/*[@name = $target]">
+                    <xsl:value-of select="normalize-space($result/*[@name = $target]/*)"/>
+                </xsl:if>
+            </xsl:variable>
+            <td>
+                <!-- If this column has a link attribute -->
+                <xsl:choose>
+                    <xsl:when test="./@link">
+                        <!-- Get the link address by replacing %target% with data from frame-->
+                        <!-- Create a link with $value as its appearing text -->
+                        <link linkend='{oc:tableVarReplace(./@link, $result)}'>
                             <xsl:value-of select="$value"/>
+                        </link>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$value"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </td>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <!-- Replaces a _columnName_ with the data from a result and returns the string-->
+    <xsl:function name="oc:tableVarReplace" as="xs:string">
+        <xsl:param name="val"/>
+        <xsl:param name="result"/>
+        <xsl:variable name="returnVal">
+            <xsl:for-each select="tokenize($val, ' ')">
+                <!-- Context node: Each token from the value of $val -->
+                <xsl:variable name="out">
+                    <xsl:choose>
+                        <!-- Regex matching $Anything$Anything -->
+                        <xsl:when test="matches(., '_.*_.*')">
+                            <xsl:variable name="target" select="substring-before(substring-after(., '_'), '_')"/>
+                            <xsl:variable name="resultVal">
+                                <xsl:value-of select="$result/*[@name = $target]/*"/>
+                            </xsl:variable>
+                            <xsl:value-of select="replace(., concat(concat('_', $target), '_'), $resultVal)"/>
+                        </xsl:when>
+                        <!-- If it doesn't match, use the initial value -->
+                        <xsl:otherwise>
+                            <xsl:value-of select="."/>
                         </xsl:otherwise>
                     </xsl:choose>
-                </td>
+                </xsl:variable>
+                <xsl:sequence select="string($out)"/>
             </xsl:for-each>
-        </tr>
-    </xsl:template>
+        </xsl:variable>
+        <xsl:value-of select="$returnVal"/>
+    </xsl:function>
 </xsl:stylesheet>

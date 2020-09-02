@@ -17,7 +17,7 @@
 
     <xsl:template name="signatureList" match="oc:signatureList">
         <xsl:param name="date" tunnel="yes"/>
-        <xsl:for-each select="./*[local-name() = 'signature']">
+        <xsl:for-each select="./oc:signature">
             <simplelist type="horiz" columns="2">
                 <member>
                     <!-- Signature? -->

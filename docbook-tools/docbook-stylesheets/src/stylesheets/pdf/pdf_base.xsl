@@ -6,6 +6,7 @@
     version="2.0">
     <import_original/>
     <import_title/>
+    <!-- Used for removing the word chapter from the chapter title -->
     <xsl:param name="local.l10n.xml" select="document('')"/>
 	<l:i18n xmlns:l="http://docbook.sourceforge.net/xmlns/l10n/1.0">
 	  <l:l10n language="en">

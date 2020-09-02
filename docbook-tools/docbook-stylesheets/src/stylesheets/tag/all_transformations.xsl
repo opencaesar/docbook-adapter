@@ -25,7 +25,7 @@
     <xsl:include href="value.xsl"/>
     <xsl:include href="table.xsl"/>
     <xsl:include href="signature.xsl"/>
-    <xsl:include href="currentDate.xsl"/>
+    <xsl:include href="date.xsl"/>
     <xsl:include href="titlePage.xsl"/>
     <xsl:include href="changeLog.xsl"/>
     <xsl:include href="sectionAndChapter.xsl"/>
