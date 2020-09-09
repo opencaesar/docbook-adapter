@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns='http://docbook.org/ns/docbook'
+    xmlns='http://docbook.org/ns/docbook' xmlns:oc="https://opencaesar.github.io/"
     exclude-result-prefixes="#all"
     version="2.0">
     <!-- Variables holding the namespaces used in the issues vocab
@@ -14,10 +14,10 @@
     </xsl:variable>
     
     <!-- Create an article with a change log -->
-    <xsl:template match="//*[local-name() = 'changeLog']">
-        <xsl:param name="frame" tunnel="yes"/>
+    <xsl:template match="oc:changeLog">
+        <xsl:param name="frameDir" tunnel="yes"/>
         <xsl:variable name="framePath"> 
-            <xsl:value-of select="$frame"/><xsl:value-of select="@frame"/>
+            <xsl:value-of select="$frameDir"/><xsl:value-of select="@frame"/>
         </xsl:variable>
         <article> 
             <title>Change Log</title>
@@ -29,7 +29,7 @@
     </xsl:template>
     
     <!-- Create just the change log table to make it more extensible --> 
-    <xsl:template name="changeTable" match="//*[local-name() = 'changeLogTable']">
+    <xsl:template name="changeTable" match="oc:changeLogTable">
         <xsl:param name="framePath"/>
         <!-- Test for the fields to be added --> 
         <xsl:variable name="includeDate" select="not(@hideDate = 'true')" as="xs:boolean"/>
@@ -39,6 +39,11 @@
         <!-- Create a getTable tag and pass it to the template -->
         
         <informaltable class="changeLog" frame="none">
+            <!-- Inherit attributes to table --> 
+            <xsl:call-template name="inheritAttributes">
+                <xsl:with-param name="excludeList" select="'frame|filter|hideDate|showCommitId|hideVersion|showEditor'"/>
+                <xsl:with-param name="target" select="."/>
+            </xsl:call-template>
             <!-- Create table headers based on tag attributes --> 
             <thead>
                 <tr>

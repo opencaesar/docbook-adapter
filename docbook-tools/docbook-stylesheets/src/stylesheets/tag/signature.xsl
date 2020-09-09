@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:oc="https://opencaesar.github.io/"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://docbook.org/ns/docbook"
     exclude-result-prefixes="#all" version="2.0">
 
     <!--Replace the signature tag with a signature page (in the form of an article) -->
-    <xsl:template match="//*[local-name() = 'signaturePage']">
+    <xsl:template match="oc:signaturePage">
         <xsl:param name="date" tunnel="yes"/>
         <article>
             <title>Signature Page</title>
@@ -14,9 +15,9 @@
         </article>
     </xsl:template>
 
-    <xsl:template name="signatureList" match="//*[local-name() = 'signatureList']">
+    <xsl:template name="signatureList" match="oc:signatureList">
         <xsl:param name="date" tunnel="yes"/>
-        <xsl:for-each select="./*[local-name() = 'signature']">
+        <xsl:for-each select="./oc:signature">
             <simplelist type="horiz" columns="2">
                 <member>
                     <!-- Signature? -->

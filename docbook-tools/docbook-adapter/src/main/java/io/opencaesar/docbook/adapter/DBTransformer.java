@@ -80,6 +80,14 @@ abstract class DBTransformer{
 		System.exit(1);
 	}
 	
+	// Adds params to the transformer that are common to both renders
+	public void addCommonParams(Transformer transformer) {
+		// Section.autolabel turns on section numbering, and 1 means to use Arabic numerals
+		transformer.setParameter("section.autolabel", "1");
+		// Section.label.includes.component.label set to 1 includes the chapter number in the numbering
+		transformer.setParameter("section.label.includes.component.label", "1");
+	}
+	
 	/**
 	 * Creates an empty params and calls on applyWithParams, which does the work
 	 */
@@ -105,12 +113,13 @@ abstract class DBTransformer{
 			params.forEach((key, value) -> {
 				transformer.setParameter(key, value);
 			});
+			addCommonParams(transformer);
 			transformer.transform(new StreamSource(input), new StreamResult(res));
 		} catch (TransformerException e) {
 			LOGGER.error("Cannot apply transformation. Printing stack trace: \n");
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
 	}
+	
 }

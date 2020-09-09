@@ -44,6 +44,9 @@ public class PDFTransform extends DBTransformer {
 			LOGGER.info("Now apply FOP to convert FO to PDF");
 			//Apply XML-FO -> PDF transformation
 			applyFOP(temp, getResult());
+			// Delete the temp file again, as deleteOnExit isn't working when 
+			// called through a gradle task
+			temp.delete();
 		} catch (IOException e) {
 			LOGGER.error("File creation exception. Printing stack trace: \n ");
 			e.printStackTrace();

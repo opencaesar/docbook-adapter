@@ -12,7 +12,8 @@ table {
     border-collapse: collapse;
 }
 
-/* Styling for the header for tables created in the inlineTable tag
+/* 
+ * Styling for the header for tables created in the inlineTable tag
  * Set the background color to a light green
  */
 tr.inlineHeader {
@@ -23,6 +24,23 @@ tr.inlineTitle {
     background-color: #BFDFBF;
 }
 
+tr.inlineBody {}
+
+/* 
+ * Stlying for table body created by oc:table or oc:nestedTable (which is default to none)
+ */
+tr.ocTable {}
+
+/* 
+ * Styling for additional headers created by oc:tableHeader
+ */
 tr.addHeader {
     background-color: #80BFFF;
+}
+
+/* 
+ * Interleave table body
+ */
+tr.interleaveTable {
+    background-color: #BFDFBF;
 }
