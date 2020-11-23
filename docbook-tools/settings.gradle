@@ -1,3 +1,5 @@
 include 'docbook-adapter'
+include 'docbook-generator'
 include 'docbook-stylesheets'
 include 'docbook-adapter-gradle'
+include 'docbook-generator-gradle'

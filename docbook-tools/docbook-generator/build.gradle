@@ -1,0 +1,29 @@
+apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: "eclipse"
+
+ext.title = 'DocBook Adapter'
+description = 'A tool to replace DocBook tags dynamically and to render DocBook into html or pdf'
+mainClassName = 'io.opencaesar.docbook.generator.DocbookAdapterApp'
+applicationName = 'docbook-generator'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+dependencies {
+    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+	implementation "com.beust:jcommander:1.72"
+	implementation "log4j:log4j:1.2.17"
+  	implementation 'org.slf4j:slf4j-nop:1.7.+'
+	implementation 'com.google.guava:guava:29.0-jre'
+	implementation 'org.apache.jena:jena-arq:3.16.0'
+	implementation 'org.apache.jena:jena-rdfconnection:3.16.0'
+	
+ 	 // XSL and FOP processors 
+	implementation "net.sf.saxon:Saxon-HE:9.9.+"
+	implementation "org.apache.xmlgraphics:fop:1.0"
+	implementation "xalan:xalan:2.7.1"
+	
+  	// Use JUnit test framework
+  	testImplementation 'junit:junit:4.12'
+}
