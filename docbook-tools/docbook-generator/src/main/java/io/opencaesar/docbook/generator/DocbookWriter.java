@@ -25,7 +25,7 @@ import org.w3c.dom.ProcessingInstruction;
 
 public class DocbookWriter {
 	
-	private static final String DOC_PREFIX = "http://opencaesar.io/document/document#";
+	private static final String DOC_PREFIX = "http://opencaesar.io/document#";
 	private static final String DOCBOOK_NS = "http://docbook.org/ns/docbook";
 	private static final String BINDING_ELEMENT_USER_DATA_KEY = DocbookWriter.class.getName() + ".BINDING_ELEMENT";
 	

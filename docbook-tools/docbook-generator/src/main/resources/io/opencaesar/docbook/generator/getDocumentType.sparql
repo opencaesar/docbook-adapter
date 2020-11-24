@@ -4,6 +4,6 @@ SELECT (? AS ?key) ?value WHERE {
     ? a ?value
   }
   GRAPH ?cg {
-    ?value rdfs:subClassOf <http://opencaesar.io/document/tree#Element>
+    ?value rdfs:subClassOf <http://opencaesar.io/document#Element>
   }
 }

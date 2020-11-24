@@ -10,10 +10,8 @@ public class DocbookAdapterTask extends DefaultTask {
 	public String input; 
 	public String type; 
 	public String xsl; 
-	public String original; 
-	public String frame; 
+	public String output; 
 	public String css; 
-	public boolean save; 
 	public boolean debug;
 	// Holds the args that will be passed to the main program 
 	public final ArrayList<String> args = new ArrayList<String>(); 
@@ -23,12 +21,8 @@ public class DocbookAdapterTask extends DefaultTask {
 		addStringArg(input, "-i"); 
 		addStringArg(type, "-t"); 
 		addStringArg(xsl, "-x");
-		addStringArg(original, "-o");
-		addStringArg(frame, "-f");
+		addStringArg(output, "-o");
 		addStringArg(css, "-c");
-		if (save) {
-			args.add("-s");
-		}
 		if (debug) {
 			args.add("-d");
 		}

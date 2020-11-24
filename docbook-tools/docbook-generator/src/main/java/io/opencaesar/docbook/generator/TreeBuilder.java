@@ -35,7 +35,7 @@ public class TreeBuilder {
 		private Node(String iri) {
 			this.iri = iri;
 			types = elementTypes.getOrDefault(iri, Collections.emptySet()).stream().map(Object::toString).collect(Collectors.toSet());
-			types.remove(TREE_PREFIX + "Element");
+			types.remove(DOC_PREFIX + "Element");
 		}
 		
 		public String getIri() {
@@ -81,7 +81,7 @@ public class TreeBuilder {
 		}
 	}
 
-	private static final String TREE_PREFIX = "http://opencaesar.io/document/tree#";
+	private static final String DOC_PREFIX = "http://opencaesar.io/document#";
 	private static final String GET_VALUES_QUERY = getQuery("getValues.sparql");
 
 	private Map<String, Map<String, RDFNode>> elementImpliedBindingValues = new HashMap<>();
@@ -104,12 +104,12 @@ public class TreeBuilder {
 		tree.documentIri = documentIri;
 		try (RDFConnection conn = RDFConnectionFactory.connect(sparqlEndpoint)) {
 			tree.initImpliedBindings(conn);
-			tree.elementSparqlExpansions = getValues(conn, TREE_PREFIX + "hasSparqlExpansion");
-			tree.elementSparqlMappings = getValues(conn, TREE_PREFIX + "hasSparqlMapping");
-			tree.elementChildren = getValues(conn, TREE_PREFIX + "hasElement");
-			tree.elementRequiredBindings = getValues(conn, TREE_PREFIX + "hasRequiredBinding");
-			tree.elementOptionalBindings = getValues(conn, TREE_PREFIX + "hasOptionalBinding");
-			tree.elementForwardedBindings = getValues(conn, TREE_PREFIX + "hasForwardedBinding");
+			tree.elementSparqlExpansions = getValues(conn, DOC_PREFIX + "hasSparqlExpansion");
+			tree.elementSparqlMappings = getValues(conn, DOC_PREFIX + "hasSparqlMapping");
+			tree.elementChildren = getValues(conn, DOC_PREFIX + "hasElement");
+			tree.elementRequiredBindings = getValues(conn, DOC_PREFIX + "hasRequiredBinding");
+			tree.elementOptionalBindings = getValues(conn, DOC_PREFIX + "hasOptionalBinding");
+			tree.elementForwardedBindings = getValues(conn, DOC_PREFIX + "hasForwardedBinding");
 			
 			tree.elementTypes = getMap(conn, getQuery("getElementTypes.sparql"), documentIri);
 			tree.elementTypes.putAll(getMap(conn, getQuery("getDocumentType.sparql"), documentIri, documentIri));
@@ -270,7 +270,7 @@ public class TreeBuilder {
     }
 
     private void initImpliedBindings(RDFConnection conn) {
-        Map<String, Set<RDFNode>> propertyToImpliedBinding = getValues(conn, TREE_PREFIX + "impliesBinding");
+        Map<String, Set<RDFNode>> propertyToImpliedBinding = getValues(conn, DOC_PREFIX + "impliesBinding");
         for (Map.Entry<String, Set<RDFNode>> propertyAndBindingNames : propertyToImpliedBinding.entrySet()) {
         	for (Map.Entry<String, Set<RDFNode>> subjectAndImpliedValues : getValues(conn, propertyAndBindingNames.getKey()).entrySet()) {
         		for (RDFNode bindingName : propertyAndBindingNames.getValue()) {

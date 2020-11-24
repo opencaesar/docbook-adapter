@@ -2,13 +2,13 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?key ?value WHERE {
   GRAPH ?dg {
     ?
-      <http://opencaesar.io/document/tree#includes>
+      <http://opencaesar.io/document#includes>
         ?key .
   }
   GRAPH ?vg {
     ?key a ?value
   }
   GRAPH ?cg {
-    ?value rdfs:subClassOf <http://opencaesar.io/document/tree#Element>
+    ?value rdfs:subClassOf <http://opencaesar.io/document#Element>
   }
 }

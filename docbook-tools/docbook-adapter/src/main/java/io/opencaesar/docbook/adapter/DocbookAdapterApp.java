@@ -30,7 +30,7 @@ public class DocbookAdapterApp {
 	
 	@Parameter(
 		names = { "--type", "-t" },
-		description = "Type of operation. Options are tag, pdf, or html (Required)",
+		description = "Type of operation. Options are pdf or html (Required)",
 		validateWith = TypeValidator.class,
 		required = true,
 		order = 2)
@@ -39,9 +39,6 @@ public class DocbookAdapterApp {
 	@Parameter(
 		names = { "--xsl", "-x" },
 		description = "Path to the required XSL. (Required) Different for each type: \n" +
-				"Tag: Path to the tag replacement XSL \n" +
-				"PDF: Path to the extension PDF XSL (Tag creates the extension at src-gen/pdf/pdf_ext.xsl) \n" +
-				"HTML: Path to the extension HTML XSL (Tag creates the extension at src-gen/html/html_ext.xsl) \n" +
 				"For original render for tag/html, give the path of the original DocBook XSL: \n" +
 				"PDF: should be located in path/to/dockbook_xsl/fo/docbook.xsl \n" + 
 				"HTML: should be located in path/to/dockbook_xsl/html/dockbook.xsl \n",
@@ -50,20 +47,12 @@ public class DocbookAdapterApp {
 	private String xslPath;
 	
 	@Parameter(
-		names = { "--original", "-o" },
-		description = "Path to the original DocBook XSLs (Required for tag replacement, otherwise optional)",
-		required = false,
+		names = { "--output", "-o" },
+		description = "Output filename (Required)",
+		required = true,
 		order = 4)
-	private String docPath = null;
+	private String outputPath = null;
 
-	
-	@Parameter(
-		names = { "--frames", "-f" },
-		description = "Path to the folder to save the result to (Required in tag replacement if a tag needing a frame was used in the DocBook)",
-		required = false,
-		order = 5)
-	private String framePath = "";
-	
 	@Parameter(
 			names = { "--css", "-c" },
 			description = "Path to a CSS file to be used for html rendering. A default one is given in stylesheets-gen/default.css (Optional; only affects HTML)",
@@ -72,23 +61,16 @@ public class DocbookAdapterApp {
 	private String cssPath = "";
 	
 	@Parameter(
-		names = { "--save", "-s" },
-		description = "Save the data. Will overwrite data in src-gen/data (optional)",
-		required = false,
-		order = 8)
-	public boolean save = false;
-
-	@Parameter(
 		names = { "-d", "--debug" },
 		description = "Shows debug logging statements",
-		order = 9)
+		order = 6)
 	private boolean debug;
 
 	@Parameter(
 		names = { "--help", "-h" },
 		description = "Displays summary of options",
 		help = true,
-		order =10)
+		order =7)
 	private boolean help;
 	
 	
@@ -121,21 +103,9 @@ public class DocbookAdapterApp {
 		LOGGER.info("                     DocBook Adapter " + getAppVersion());
 		LOGGER.info("=================================================================");
 		LOGGER.info("DocBook: " + inputPath);
-		//Create src-gen
-		String srcParent = new File(inputPath).getParentFile().getParent();
-		File srcGen = new File(srcParent + File.separator + "src-gen");
-		LOGGER.info(srcGen.getAbsolutePath());
-		if (!srcGen.exists()) {
-			//Create src-gen if it doesn't exist, 
-			if (!srcGen.mkdir()) {
-				//Cannot create src-gen. Exit
-				LOGGER.error("Cannot make src-gen. Exiting");
-				System.exit(1);
-			}
-		}
-		LOGGER.info("Results will be placed in: " + srcGen.getAbsolutePath());
+		LOGGER.info("Output: " + outputPath);
 		//Get DBTransformer class 
-		DBTransformer trans = getTransformer(inputPath, srcGen.getPath(), type);
+		DBTransformer trans = getTransformer(inputPath, outputPath, type);
 		if (trans != null) {
 			trans.apply();
 		} else {
@@ -178,21 +148,18 @@ public class DocbookAdapterApp {
 	}
 	
 	//Get style sheet depending on task
-	private DBTransformer getTransformer(String inputPath, String resultDir, String type) {
+	private DBTransformer getTransformer(String inputPath, String outputPath, String type) {
 		//Use the inputPath's file name as the output's name
 		File input = new File(inputPath); 
 		if (!input.exists()) {
 			LOGGER.error("Input doesn't exist at: " + inputPath); 
 			return null;
 		}
-		String result = resultDir + File.separator + input.getName().substring(0, input.getName().lastIndexOf("."));
 		switch (type.toLowerCase()) {
-			case "tag":
-				return new TagTransform(inputPath, xslPath, result + ".xml", framePath, docPath, save);
 			case "pdf":
-				return new PDFTransform(inputPath, xslPath, result + ".pdf");
+				return new PDFTransform(inputPath, xslPath, outputPath);
 			case "html":
-				return new HTMLTransform(inputPath, xslPath, result + ".html", cssPath);
+				return new HTMLTransform(inputPath, xslPath, outputPath, cssPath);
 			default: 
 				LOGGER.error(type + " is not a supported type. Please choose tag, pdf, or html");
 				return null;

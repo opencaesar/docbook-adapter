@@ -1,6 +1,7 @@
 package io.opencaesar.docbook.generator;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,7 +91,11 @@ public class DocbookGeneratorApp {
 			LOGGER.debug("Tree: " + root);
 		}
 		
-		try (OutputStream output = new BufferedOutputStream(new FileOutputStream(outputFilename))) {
+		File outputFile = new File(outputFilename);
+		if (!outputFile.getParentFile().exists()) {
+			outputFile.getParentFile().mkdirs();
+		}
+		try (OutputStream output = new BufferedOutputStream(new FileOutputStream(outputFile))) {
 			DocbookWriter.writeAsDocbook(root, output);
 		}
 		
