@@ -1,7 +1,7 @@
 # DocBook Generator
 
-Generates DocBook reports from templates in a Fuseki dataset using
-the `<http://opencaesar.io/document>` vocabulary.
+Converts document tree JSON files produced by `owl-doc` (from `owl-tools`)
+into docbook XML.
 
 ## Run as a CLI 
 MacOS/Linux: 
@@ -16,8 +16,7 @@ Windows:
 ```
 Arguments:
 ```
---endpoint, -e http://fuseki:3030/dataset  (Required)
---input, -i http://example.org/document-iri#Document (Required)
+--input, -i input-filename.json  (Required)
 --output, -o output-filename.xml (Required)
 --debug, -d (Optional)
 ```

@@ -1,4 +1,4 @@
-package io.opencaesar.docbook.adapter;
+package io.opencaesar.docbook.renderer;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.IParameterValidator;
 import com.google.common.io.CharStreams;
 
-public class DocbookAdapterApp {
+public class DocbookRendererApp {
 	@Parameter(
 		names = { "--input", "-i" },
 		description = "DocBook file to apply the XSLT to (Required)",
@@ -74,12 +74,12 @@ public class DocbookAdapterApp {
 	private boolean help;
 	
 	
-	private final Logger LOGGER = LogManager.getLogger(DocbookAdapterApp.class); {
+	private final Logger LOGGER = LogManager.getLogger(DocbookRendererApp.class); {
         DOMConfigurator.configure(ClassLoader.getSystemClassLoader().getResource("log4j.xml"));
 	}
 	
 	public static void main(final String... args) {
-		final DocbookAdapterApp app = new DocbookAdapterApp();
+		final DocbookRendererApp app = new DocbookRendererApp();
 		final JCommander builder = JCommander.newBuilder().addObject(app).build();
 		builder.parse(args);
 		if (app.help) {

@@ -1,15 +1,18 @@
-# DocBook Adapter
-A tool to execute tag transformations and renders on a given DocBook.
+# DocBook Renderer
+
+A tool to execute tag transformations and renders on a given DocBook into PDF
+and HTML.
+
 ## Run as a CLI 
 MacOS/Linux: 
 ```
     cd docbook-tools
-    ./gradlew docbook-adapter:run --args="..."    
+    ./gradlew docbook-renderer:run --args="..."    
 ```
 Windows: 
 ```
     cd docbook-tools
-    gradlew.bat docbook-adapter:run --args="..."    
+    gradlew.bat docbook-renderer:run --args="..."    
 ```
 Args for PDF render:    
 ```

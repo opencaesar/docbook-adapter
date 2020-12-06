@@ -1,8 +1,9 @@
-# DocBook Adapter Gradle
-A gradle interface to execute Docbook-Adapter. 
+# DocBook Renderer Gradle
+A gradle interface to execute Docbook-Renderer. 
 
 ## Run as a Gradle Task
-Add Docbook-Adapter to maven local. In the docbook-tools repo:      
+Add Docbook-Renderer to maven local. In the docbook-tools repo:     
+ 
 #### Linux/MacOS:
 ```
 ./gradlew publishToMavenLocal
@@ -20,13 +21,13 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'io.opencaesar.docbook:docbook-adapter-gradle:+'
+		classpath 'io.opencaesar.docbook:docbook-renderer-gradle:+'
 	}
 }
 ```
 #### Task for tag replacement: 
 ```
-task docbookAdapterTag(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
+task docbookAdapterTag(type:io.opencaesar.docbook.renderer.DocbookRendererTask) {
 	input = file('path/to/input/docbook.xml')
 	type = 'tag'
 	xsl = file('path/to/stylesheet-gen/tag/all_transformations.xsl')
@@ -36,7 +37,7 @@ task docbookAdapterTag(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 ```
 #### Task for pdf render: 
 ```
-task docbookAdapterPDF(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
+task docbookAdapterPDF(type:io.opencaesar.docbook.renderer.DocbookRendererTask) {
 	input = file('path/to/input/docbook.xml')
 	type = 'pdf'
 	xsl = file('path/to/src-gen/pdf/pdf_ext.xsl')
@@ -44,7 +45,7 @@ task docbookAdapterPDF(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
 ```
 #### Task for html render: 
 ```
-task docbookAdapterHTML(type:io.opencaesar.docbook.adapter.DocbookAdapterTask) {
+task docbookAdapterHTML(type:io.opencaesar.docbook.renderer.DocbookRendererTask) {
 	input = file('path/to/input/docbook.xml')
 	type = 'html'
 	xsl = file('path/to/src-gen/html/html_ext.xsl')

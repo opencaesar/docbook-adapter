@@ -2,10 +2,10 @@ apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: "eclipse"
 
-ext.title = 'DocBook Adapter'
+ext.title = 'DocBook Renderer'
 description = 'A tool to replace DocBook tags dynamically and to render DocBook into html or pdf'
-mainClassName = 'io.opencaesar.docbook.adapter.DocbookAdapterApp'
-applicationName = 'docbook-adapter'
+mainClassName = 'io.opencaesar.docbook.renderer.DocbookRendererApp'
+applicationName = 'docbook-renderer'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'

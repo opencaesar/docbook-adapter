@@ -7,7 +7,6 @@ import org.gradle.api.tasks.TaskAction;
 
 public class DocbookGeneratorTask extends DefaultTask {
 	// Args used in Docbook adapter
-	public String endpoint;
 	public String input;
 	public String output;
 	public boolean debug;
@@ -16,7 +15,6 @@ public class DocbookGeneratorTask extends DefaultTask {
 	
 	@TaskAction
 	public void run() {
-		addStringArg(endpoint, "-e"); 
 		addStringArg(input, "-i"); 
 		addStringArg(output, "-o");
 		if (debug) {

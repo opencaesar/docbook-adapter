@@ -1,8 +1,9 @@
 # DocBook Generator Gradle
-A gradle interface to execute Docbook-Adapter. 
+A gradle interface to execute Docbook-Generator. 
 
 ## Run as a Gradle Task
-Add Docbook-Generator to maven local. In the docbook-tools repo:      
+Add Docbook-Generator to maven local. In the docbook-tools repo:    
+  
 #### Linux/MacOS:
 ```
 ./gradlew publishToMavenLocal
@@ -26,9 +27,8 @@ buildscript {
 ```
 #### Task for docbook generation: 
 ```
-task docbookGeneratorTask(type:io.opencaesar.docbook.adapter.DocbookGeneratorTask) {
-	endpoint = 'http://localhost:3030/firesat'
-	input = 'http://opencaesar.io/programs/earth-science/projects/firesat/documents/work-breakdown-structure#WorkBreakdownStructure'
+task docbookGeneratorTask(type:io.opencaesar.docbook.renderer.DocbookGeneratorTask) {
+	input = file('build/documents/wbs.json')
 	output = file('build/documents/wbs.xml')
 }
 ```

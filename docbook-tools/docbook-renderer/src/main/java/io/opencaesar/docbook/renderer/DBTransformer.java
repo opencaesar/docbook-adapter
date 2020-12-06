@@ -1,4 +1,4 @@
-package io.opencaesar.docbook.adapter;
+package io.opencaesar.docbook.renderer;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +27,7 @@ abstract class DBTransformer{
 	public abstract void apply(); 	
 	
 	public DBTransformer(String inputPath, String stylePath, String resultPath) {
-		LOGGER = LogManager.getLogger(DocbookAdapterApp.class);
+		LOGGER = LogManager.getLogger(DocbookRendererApp.class);
 		input = getFile(inputPath); 
 		style = getFile(stylePath); 
 		//Double check if input and result are the same (error if they are)

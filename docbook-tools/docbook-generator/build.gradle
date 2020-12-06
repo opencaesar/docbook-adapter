@@ -4,7 +4,7 @@ apply plugin: "eclipse"
 
 ext.title = 'DocBook Adapter'
 description = 'A tool to replace DocBook tags dynamically and to render DocBook into html or pdf'
-mainClassName = 'io.opencaesar.docbook.generator.DocbookAdapterApp'
+mainClassName = 'io.opencaesar.docbook.generator.DocbookRendererApp'
 applicationName = 'docbook-generator'
 
 sourceCompatibility = '1.8'

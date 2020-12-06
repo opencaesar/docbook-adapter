@@ -1,11 +1,11 @@
-package io.opencaesar.docbook.adapter;
+package io.opencaesar.docbook.renderer;
 
 import java.util.ArrayList;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
-public class DocbookAdapterTask extends DefaultTask {
+public class DocbookRendererTask extends DefaultTask {
 	// Args used in Docbook adapter
 	public String input; 
 	public String type; 
@@ -26,7 +26,7 @@ public class DocbookAdapterTask extends DefaultTask {
 		if (debug) {
 			args.add("-d");
 		}
-		DocbookAdapterApp.main(args.toArray(new String[args.size()]));
+		DocbookRendererApp.main(args.toArray(new String[args.size()]));
 	}
 	
 	// Adds the string arg and its name if the input isn't null

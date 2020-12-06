@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>docbook-adapter</name>
+	<name>docbook-renderer</name>
 	<comment>A tool to replace DocBook tags dynamically</comment>
 	<projects>
 	</projects>

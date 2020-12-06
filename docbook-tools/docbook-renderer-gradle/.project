@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>docbook-adapter-gradle</name>
-	<comment>Project docbook-adapter-gradle created by Buildship.</comment>
+	<name>docbook-renderer-gradle</name>
+	<comment>Project docbook-renderer-gradle created by Buildship.</comment>
 	<projects>
 	</projects>
 	<buildSpec>

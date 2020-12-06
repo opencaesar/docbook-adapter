@@ -1,4 +1,4 @@
-package io.opencaesar.docbook.adapter;
+package io.opencaesar.docbook.renderer;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
