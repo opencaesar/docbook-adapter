@@ -1,0 +1,6 @@
+SELECT DISTINCT ?key ?value
+WHERE {
+    GRAPH ?g {
+        ?key ? ?value .
+    }
+}

@@ -1,9 +1,0 @@
-ext.title = 'DocBook Adapter Gradle'
-description = 'A gradle interface to DocBook Adapter'
-
-apply plugin: 'java-library'
-
-dependencies {
-	implementation gradleApi()
-    implementation project (':docbook-adapter')
-}

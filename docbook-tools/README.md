@@ -14,5 +14,10 @@ Requirements: java 8
     ./gradlew build
 ```
 
-## [DocBook Adapter](docbook-tools/docbook-tools/README.md)
-A tool to execute tag transformations and renders on a given DocBook.
+## [DocBook Generator](docbook-tools/docbook-generator/README.md)
+
+Converts `owl-doc` JSON output to Docbook XML
+
+## [DocBook Renderer](docbook-tools/docbook-renderer/README.md)
+
+Converts Docbook XML to PDF and HTML

@@ -1,0 +1,9 @@
+ext.title = 'DocBook Generator Gradle'
+description = 'A gradle interface to DocBook Generator'
+
+apply plugin: 'java-library'
+
+dependencies {
+	implementation gradleApi()
+    implementation project (':docbook-generator')
+}
